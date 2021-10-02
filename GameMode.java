@@ -21,6 +21,7 @@ public class GameMode {
     protected int score;
     public static String cardPath = "CardImages/greywyvern-cardset/";
     public static String backgroundPath = "CardImages/greywyvern-cardset/";
+    public static boolean autoMove = true;
 
     public String getName() { return gameName; }
 	public String getDesc() { return gameDesc; }
@@ -33,15 +34,13 @@ public class GameMode {
     public void loadGame() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
     public void refreshCards() {  }
     public void undo() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
-    public void redo() { JOptionPane.showMessageDialog(table, "This functionality isnot enabled for this game mode"); }
+    public void redo() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
+    public void hint() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
     public void updateTimer() { }
     public void mousePressed(MouseEvent e) { }
     public void mouseReleased(MouseEvent e) { }
     public void mouseMoved(MouseEvent e) { }
 
-    /**
-     * testing this
-     */
     public void startMenu() {
         updateScores();
 		score = 0;

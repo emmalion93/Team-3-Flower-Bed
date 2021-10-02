@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -43,6 +44,8 @@ public class FlowerBed extends GameMode
 	private Card card = null; // card to be moved
 	private List<CardHistory> undoStack = new ArrayList<CardHistory>();
 	private List<CardHistory> redoStack = new ArrayList<CardHistory>();
+	private int lastHintSelected = 0;
+	private int lastHintSearched = 0;
 	// used for moving single cards
 	private FlowerBedCardStack source = null;
 	private FlowerBedCardStack dest = null;
@@ -308,6 +311,348 @@ public class FlowerBed extends GameMode
 		}
 	}
 
+	public void hint() {
+		boolean cardMoved = false;
+		if(tryAutoMove()) {
+			cardMoved = true;
+			if(GameMode.autoMove) {
+				while(tryAutoMove()) { }
+			}
+		}
+
+		if(!cardMoved) {
+			for (int y = lastHintSelected; y < NUM_PLAY_DECKS; y++)
+			{
+				if(hintLoop(y)) {
+					cardMoved = true;
+					break;
+				}
+			}
+
+			if(!cardMoved) {
+				if(lastHintSelected >= NUM_PLAY_DECKS) {
+					lastHintSelected = NUM_PLAY_DECKS;
+				}
+				for (int y = 0; y < lastHintSelected - 1; y++)
+				{
+					if(hintLoop(y)) {
+						cardMoved = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	private boolean tryAutoMove() {
+		boolean cardMoved = false;
+		for (int y = 0; y < NUM_FINAL_DECKS; y++)
+		{
+			FlowerBedCardStack tempYStack = final_cards[y];
+			Card cStacking = (Card) tempYStack.getLast();
+
+			for (int x = 0; x < NUM_PLAY_DECKS; x++)
+			{
+				FlowerBedCardStack tempXStack = playCardStack[x];
+				if(tempXStack.v.size() == 0) {
+					continue;
+				}
+				Card cMoving = (Card) tempXStack.getFirst();
+
+				if(hintLoopDeck(cMoving, cStacking, tempXStack, tempYStack)) {
+					cardMoved = true;
+					break;
+				}
+			}
+			if(cardMoved) {
+				break;
+			}
+
+			for (int x = 0; x < deck.v.size(); x++)
+			{
+				FlowerBedCardStack tempXStack = deck;
+				if(tempXStack.v.size() == 0) {
+					continue;
+				}
+				Card cMoving = (Card) deck.v.get(x);
+
+				if(hintLoopDeck(cMoving, cStacking, tempXStack, tempYStack)) {
+					cardMoved = true;
+					break;
+				}
+			}
+			if(cardMoved) {
+				break;
+			}
+		}
+
+
+		return cardMoved;
+	}
+
+	private boolean hintLoopDeck(Card cMoving, Card cStacking, FlowerBedCardStack tempXStack, FlowerBedCardStack tempYStack) {
+		boolean cardMoved = false;
+		if(tempYStack.empty()) {
+			if (cMoving.getValue() == Card.Value.ACE)
+			{
+				source =  tempXStack;
+				card = cMoving;
+				dest = tempYStack;
+				undoStack.add(new CardHistory(card, dest, source));
+				redoStack.clear();
+
+				Card c = card;
+				source.removeCard(card);
+
+
+				c.repaint();
+				// if playstack, turn next card up
+				if (source.getFirst() != null)
+				{
+					Card temp = source.getFirst().setFaceup();
+					temp.repaint();
+					source.repaint();
+				}
+
+				dest.setXY(dest.getXY().x, dest.getXY().y);
+				dest.push(c);
+
+				source.repaint();
+				
+				table.repaint();
+
+				start = null;
+				stop = null;
+				source = null;
+				dest = null;
+				card = null;
+				sourceIsFinalDeck = false;
+				checkForWin = false;
+				gameOver = false;
+				cardMoved = true;
+			}
+		} else {
+			if(validFinalStackMove(cMoving, cStacking)) {
+				source =  tempXStack;
+				card = cMoving;
+				dest = tempYStack;
+				undoStack.add(new CardHistory(card, dest, source));
+				redoStack.clear();
+
+				Card c = card;
+				source.removeCard(card);
+
+
+				c.repaint();
+				// if playstack, turn next card up
+				if (source.getFirst() != null)
+				{
+					Card temp = source.getFirst().setFaceup();
+					temp.repaint();
+					source.repaint();
+				}
+
+				dest.setXY(dest.getXY().x, dest.getXY().y);
+				dest.push(c);
+
+				source.repaint();
+				
+				table.repaint();
+
+				start = null;
+				stop = null;
+				source = null;
+				dest = null;
+				card = null;
+				sourceIsFinalDeck = false;
+				checkForWin = false;
+				gameOver = false;
+				cardMoved = true;
+			}
+		}
+
+		return cardMoved;
+	}
+
+	private boolean hintLoop(int y) {
+		boolean cardMoved = false;
+		FlowerBedCardStack tempYStack = playCardStack[y];
+		Card cStacking = (Card) tempYStack.getFirst();
+
+		for (int x = lastHintSearched; x < NUM_PLAY_DECKS; x++)
+		{
+			FlowerBedCardStack tempXStack = playCardStack[x];
+			if(tempXStack.v.size() == 0) {
+				continue;
+			}
+			Card cMoving = (Card) tempXStack.getFirst();
+
+			if(hintTryMoveCard(cMoving, cStacking, tempXStack, tempYStack, x, y)) {
+				cardMoved = true;
+				break;
+			}
+		}
+		if(cardMoved) {
+			return cardMoved;
+		}
+
+
+		for (int x = lastHintSearched - NUM_PLAY_DECKS; x < deck.v.size(); x++)
+		{
+			if(x < 0) {
+				x = 0;
+			}
+			FlowerBedCardStack tempXStack = deck;
+			if(tempXStack.v.size() == 0) {
+				continue;
+			}
+			Card cMoving = (Card) deck.v.get(x);
+
+			if(hintTryMoveCard(cMoving, cStacking, tempXStack, tempYStack, x + NUM_PLAY_DECKS, y)) {
+				cardMoved = true;
+				break;
+			}
+		}
+		if(cardMoved) {
+			return cardMoved;
+		}
+
+
+
+		
+		//1st 2nd loop
+		for (int x = 0; x < lastHintSearched; x++)
+		{
+			if(x >= NUM_PLAY_DECKS) {
+				break;
+			}
+			FlowerBedCardStack tempXStack = playCardStack[x];
+			if(tempXStack.v.size() == 0) {
+				continue;
+			}
+			Card cMoving = (Card) tempXStack.getFirst();
+
+			if(hintTryMoveCard(cMoving, cStacking, tempXStack, tempYStack, x, y)) {
+				cardMoved = true;
+				break;
+			}
+		}
+		if(cardMoved) {
+			return cardMoved;
+		}
+
+		for (int x = 0; x < lastHintSearched - NUM_PLAY_DECKS; x++)
+		{
+			if(x >= deck.v.size()) {
+				break;
+			}
+
+			FlowerBedCardStack tempXStack = deck;
+			if(tempXStack.v.size() == 0) {
+				continue;
+			}
+			Card cMoving = (Card) deck.v.get(x);
+
+			if(hintTryMoveCard(cMoving, cStacking, tempXStack, tempYStack, x + NUM_PLAY_DECKS, y)) {
+				cardMoved = true;
+				break;
+			}
+		}
+		if(cardMoved) {
+			return cardMoved;
+		}
+
+		return cardMoved;
+	}
+
+	private boolean hintTryMoveCard(Card cMoving, Card cStacking, FlowerBedCardStack tempXStack, FlowerBedCardStack tempYStack, int x, int y) {
+		boolean cardMoved = false;
+
+		if(tempYStack.empty()) {
+			source =  tempXStack;
+			card = cMoving;
+			dest = tempYStack;
+			undoStack.add(new CardHistory(card, dest, source));
+			redoStack.clear();
+
+			Card c = card;
+			source.removeCard(card);
+
+
+			c.repaint();
+			// if playstack, turn next card up
+			if (source.getFirst() != null)
+			{
+				Card temp = source.getFirst().setFaceup();
+				temp.repaint();
+				source.repaint();
+			}
+
+			dest.setXY(dest.getXY().x, dest.getXY().y);
+			dest.push(c);
+
+			source.repaint();
+			
+			table.repaint();
+
+			start = null;
+			stop = null;
+			source = null;
+			dest = null;
+			card = null;
+			sourceIsFinalDeck = false;
+			checkForWin = false;
+			gameOver = false;
+
+			cardMoved = true;
+			lastHintSelected = y;
+			lastHintSearched = x;
+		} else {
+			if(validPlayStackMove(cMoving, cStacking)) {
+				source =  tempXStack;
+				card = cMoving;
+				dest = tempYStack;
+				undoStack.add(new CardHistory(card, dest, source));
+				redoStack.clear();
+
+				Card c = card;
+				source.removeCard(card);
+
+
+				c.repaint();
+				// if playstack, turn next card up
+				if (source.getFirst() != null)
+				{
+					Card temp = source.getFirst().setFaceup();
+					temp.repaint();
+					source.repaint();
+				}
+
+				dest.setXY(dest.getXY().x, dest.getXY().y);
+				dest.putFirst(c);
+
+				source.repaint();
+				
+				table.repaint();
+
+				start = null;
+				stop = null;
+				source = null;
+				dest = null;
+				card = null;
+				sourceIsFinalDeck = false;
+				checkForWin = false;
+				gameOver = false;
+
+				cardMoved = true;
+				lastHintSelected = y;
+				lastHintSearched = x;
+			}
+		}
+
+		return cardMoved;
+	}
+
 	private boolean validPlayStackMove(Card source, Card dest)
 	{
 		int s_val = source.getValue().ordinal();
@@ -440,7 +785,6 @@ public class FlowerBed extends GameMode
 					movedCard.setXY(dest.getXY());
 					table.remove(prevCard);
 					dest.putFirst(movedCard);
-
 					undoStack.add(new CardHistory(movedCard, dest, source));
 					redoStack.clear();
 
@@ -483,7 +827,6 @@ public class FlowerBed extends GameMode
 					{
 						dest.push(movedCard);
 						table.remove(prevCard);
-
 						undoStack.add(new CardHistory(movedCard, dest, source));
 						redoStack.clear();
 
@@ -502,7 +845,6 @@ public class FlowerBed extends GameMode
 					System.out.println("Destin" + dest.showSize());
 					dest.push(movedCard);
 					table.remove(prevCard);
-
 					undoStack.add(new CardHistory(movedCard, dest, source));
 					redoStack.clear();
 
@@ -551,7 +893,6 @@ public class FlowerBed extends GameMode
 					redoStack.clear();
 
 					table.repaint();
-
 					System.out.print("Destination ");
 					dest.showSize();
 					if (sourceIsFinalDeck)
@@ -676,6 +1017,9 @@ public class FlowerBed extends GameMode
 			//statusBox.setText("That Is Not A Valid Move");
 		} else if(validMoveMade) {
 			playSound("Sounds/mixkit-poker-card-flick-2002.wav");
+			if(GameMode.autoMove) {
+				while(tryAutoMove()) { }
+			}
 		}
 		// CHECKING FOR WIN
 		if (checkForWin)
@@ -795,6 +1139,10 @@ public class FlowerBed extends GameMode
 		time = 0;
     
 		table.repaint();
+
+		if(GameMode.autoMove) {
+			while(tryAutoMove()) { }
+		}
 	}
 
 	public void refreshCards() {
