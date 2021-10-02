@@ -81,10 +81,52 @@ public class MenuButtons {
 
 	private class MainMenuListener implements ActionListener
 	{
+		private JFrame confirmFrame = new JFrame("Return To Menu");
+		private JPanel confirmTable = new JPanel();
+		private JEditorPane confirmText = new JEditorPane();
+		private JButton confirmButton = new JButton("Confirm");
+
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			currentGameMode.startMenu();
+			confirmTable.removeAll();
+			Container contentPane;
+
+
+			confirmTable.setLayout(null);
+
+			contentPane = confirmFrame.getContentPane();
+			contentPane.add(confirmTable);
+
+			confirmFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			confirmFrame.setSize(400, 200);
+
+			confirmText.setText("Are you sure you would like to end the current game?");
+			confirmText.setFont(new Font("Arial", Font.BOLD, 15));
+			confirmText.setEditable(false);
+			confirmText.setOpaque(false);
+			confirmText.setBounds(5, 45, 400, 60);
+
+			
+			confirmButton.setBounds(125, 80, 130, 30);
+			confirmButton.addActionListener(new confirmMenuListener());
+			confirmButton.setEnabled(true);
+
+			confirmTable.add(confirmButton);
+			confirmTable.add(confirmText);
+
+			confirmTable.setVisible(true);
+			confirmFrame.setVisible(true);
+		}
+
+		private class confirmMenuListener implements ActionListener
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				currentGameMode.startMenu();
+				confirmFrame.dispose();
+			}
 		}
 	}
 
