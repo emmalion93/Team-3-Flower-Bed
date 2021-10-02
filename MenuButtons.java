@@ -1,5 +1,6 @@
 import javax.sound.sampled.FloatControl;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -49,6 +50,7 @@ public class MenuButtons {
 	private  JTextField statusBox = new JTextField();// status messages
 	private JButton redoButton = new JButton("Redo");
 	private JButton undoButton = new JButton("Undo");
+	private JButton hintButton = new JButton("Hint");
 
 
 	private ScoreClock scoreClock;
@@ -215,6 +217,9 @@ public class MenuButtons {
 		private JEditorPane backgroundDropText = new JEditorPane();
 		private String[] backgroundDropDownOptions = { "Green", "White" };
 		private JComboBox<String> backgroundDropDown = new JComboBox<String>(backgroundDropDownOptions);
+		private JEditorPane autoMoveText = new JEditorPane();
+		private JCheckBox checkBox;
+		private boolean checked;
 
 		@Override
 		public void actionPerformed(ActionEvent e)
@@ -279,6 +284,19 @@ public class MenuButtons {
 			backgroundDropText.setBounds(5, 245, 150, 60);
 			backgroundDropDown.setBounds(150,245,150,30);
 
+			checked = GameMode.autoMove;
+
+			autoMoveText.setText("Auot Move: ");
+			autoMoveText.setFont(new Font("Arial", Font.BOLD, 15));
+			autoMoveText.setEditable(false);
+			autoMoveText.setOpaque(false);
+			autoMoveText.setBounds(5, 290, 120, 60);
+
+			checkBox= new JCheckBox();
+			checkBox.addActionListener(new CheckListener());
+			checkBox.setSelected(checked);
+			checkBox.setBounds(150,290,30,30);
+
 			
 			confirmButton.setBounds(135, 330, 130, 30);
 			confirmButton.addActionListener(new confirmOptionsListener());
@@ -295,6 +313,8 @@ public class MenuButtons {
 			ruleTable.add(cardDropText);
 			ruleTable.add(backgroundDropDown);
 			ruleTable.add(backgroundDropText);
+			ruleTable.add(checkBox);
+			ruleTable.add(autoMoveText);
 
 			ruleTable.setVisible(true);
 			ruleFrame.setVisible(true);
@@ -323,6 +343,8 @@ public class MenuButtons {
 					currentGameMode.refreshCards();
 				}
 
+				GameMode.autoMove = checked;
+
 				if(backgroundDropDown.getSelectedItem().equals("Green")) {
 					table.setBackground(new Color(0, 180, 0));
 				} else if(backgroundDropDown.getSelectedItem().equals("White")) {
@@ -331,6 +353,20 @@ public class MenuButtons {
 				
 				positionButtons(_Direction);
 				ruleFrame.dispose();
+			}
+		}
+
+		private class CheckListener implements ActionListener
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				JCheckBox myBox = (JCheckBox) e.getSource();
+				if( myBox.isSelected()) {
+					checked = true;
+				} else {
+					checked = false;
+				}
 			}
 		}
 
@@ -355,6 +391,15 @@ public class MenuButtons {
 		public void actionPerformed(ActionEvent e)
 		{
 			currentGameMode.redo();
+		}
+	}
+
+	private class HintListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			currentGameMode.hint();
 		}
 	}
 
@@ -406,6 +451,8 @@ public class MenuButtons {
 		redoButton.addActionListener(new RedoListener());
 
 		undoButton.addActionListener(new UndoListener());
+
+		hintButton.addActionListener(new HintListener());
 
 		//mainMenuButton.setBounds(0, TABLE_HEIGHT - 70, 120, 30);
 
@@ -468,8 +515,9 @@ public class MenuButtons {
                 saveButton.setBounds(905, 0, 125, 30);
                 loadButton.setBounds(1030, 0, 125, 30);
                 optionsButton.setBounds(1155, 0, 130, 30);
-				undoButton.setBounds(1030, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
+				undoButton.setBounds(1025, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
 				redoButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
+				hintButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 130, 130, 30);
                 break;
             case DOWN:
                 mainMenuButton.setBounds(0, FlowerBed.TABLE_HEIGHT - 70, 120, 30);
@@ -483,8 +531,9 @@ public class MenuButtons {
                 saveButton.setBounds(905, FlowerBed.TABLE_HEIGHT - 70, 125, 30);
                 loadButton.setBounds(1030, FlowerBed.TABLE_HEIGHT - 70, 125, 30);
                 optionsButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 70, 130, 30);
-				undoButton.setBounds(1030, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
+				undoButton.setBounds(1025, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
 				redoButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
+				hintButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 130, 130, 30);
                 break;
 		}
     }
@@ -503,6 +552,7 @@ public class MenuButtons {
 		table.add(scoreBox);
 		table.add(undoButton);
 		table.add(redoButton);
+		table.add(hintButton);
 		table.repaint();
 	}
 
@@ -518,6 +568,7 @@ public class MenuButtons {
 		scoreBox.setEnabled(false);
 		undoButton.setEnabled(false);
 		redoButton.setEnabled(false);
+		hintButton.setEnabled(false);
 	}
 
 	public void enableAllButtons() {
@@ -533,5 +584,6 @@ public class MenuButtons {
 		scoreBox.setEnabled(true);
 		undoButton.setEnabled(true);
 		redoButton.setEnabled(true);
+		hintButton.setEnabled(true);
 	}
 }
