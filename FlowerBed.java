@@ -2,15 +2,24 @@
 import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.awt.Font;
 
 public class FlowerBed extends GameMode
 {
@@ -42,6 +51,10 @@ public class FlowerBed extends GameMode
 	private Point start = null;// where mouse was clicked
 	private Point stop = null;// where mouse was released
 	private Card card = null; // card to be moved
+	private Card focusedCard = null; // card to be focused
+	private PreviewCard previewCard = null; // UI that shows the currently focused card
+	private FlowerBedCardStack previewCardStack;
+	private JEditorPane previewText = new JEditorPane();
 	private List<CardHistory> undoStack = new ArrayList<CardHistory>();
 	private List<CardHistory> redoStack = new ArrayList<CardHistory>();
 	private int lastHintSelected = 0;
@@ -49,6 +62,7 @@ public class FlowerBed extends GameMode
 	// used for moving single cards
 	private FlowerBedCardStack source = null;
 	private FlowerBedCardStack dest = null;
+	private FlowerBedCardStack focusedStack = null;
 	// used for moving a stack of cards
 	private FlowerBedCardStack transferStack = new FlowerBedCardStack(false);
 
@@ -56,32 +70,18 @@ public class FlowerBed extends GameMode
 		gameName = "Flower Bed";
 		gameDesc = "Move cards one at a time onto stacks regardless of suit/color to fill foundations.";
 	
-		gameRules = "<b>Klondike Solitaire Rules</b>"
-				+ "<br><br> (From Wikipedia) Taking a shuffled standard 52-card deck of playing cards (without Jokers),"
-				+ " one upturned card is dealt on the left of the playing area, then six downturned cards"
-				+ " (from left to right).<p> On top of the downturned cards, an upturned card is dealt on the "
-				+ "left-most downturned pile, and downturned cards on the rest until all piles have an "
-				+ "upturned card. The piles should look like the figure to the right.<p>The four foundations "
-				+ "(light rectangles in the upper right of the figure) are built up by suit from Ace "
-				+ "(low in this game) to King, and the tableau piles can be built down by alternate colors,"
-				+ " and partial or complete piles can be moved if they are built down by alternate colors also. "
-				+ "Any empty piles can be filled with a King or a pile of cards with a King.<p> The point of "
-				+ "the game is to build up a stack of cards starting with 2 and ending with King, all of "
-				+ "the same suit. Once this is accomplished, the goal is to move this to a foundation, "
-				+ "where the player has previously placed the Ace of that suit. Once the player has done this, "
-				+ "they will have \"finished\" that suit- the goal being, of course, to finish all suits, "
-				+ "at which time the player will have won.<br><br><b> Scoring </b><br><br>"
-				+ "Moving cards directly from the Waste stack to a Foundation awards 10 points. However, "
-				+ "if the card is first moved to a Tableau, and then to a Foundation, then an extra 5 points "
-				+ "are received for a total of 15. Thus in order to receive a maximum score, no cards should be moved "
-				+ "directly from the Waste to Foundation.<p>	Time can also play a factor in Windows Solitaire, if the Timed game option is selected. For every 10 seconds of play, 2 points are taken away."
-				+ "<b><br><br>Notes On My Implementation</b><br><br>"
-				+ "Drag cards to and from any stack. As long as the move is valid the card, or stack of "
-				+ "cards, will be repositioned in the desired spot. The game follows the standard scoring and time"
-				+ " model explained above with only one waste card shown at a time."
-				+ "<p> The timer starts running as soon as "
-				+ "the game begins, but it may be paused by pressing the pause button at the bottom of"
-				+ "the screen. ";
+		gameRules = "<b>Flower Bed Solitaire Rules</b>"
+				+ "<br><br><b><br>How it’s played:<br></b> In this variation of Flower Bed, 35 cards are dealt into seven 5-card columns. The columns are referred to as ‘flower-beds’ and together these ‘flower-beds’ all make up ‘the garden’. The 17 leftover cards below ‘the garden’ are known as ‘the bouquet’. The top four slots are referred to as ‘foundations’ where Ace to King is stacked by suit."
+				+ "Cards can only be moved one at a time. The top cards of each flower-bed and all bouquet cards are playable. The foundations are built by suit, Ace to King. However, the flower-beds are built down regardless of suit, and the bouquet cards can be moved into the garden or stacked onto foundations. If a flower-bed opens up in the garden a card of any number or suit may fill the spot. Filling all four foundations, like any solitaire, is how you win the game."
+				+ "<b><br><br>Scoring:</b><br><br>"
+				+ "10 points are awarded to every successful move whether the card moved from the bouquet to the garden or among the garden or to the foundations. Speed is important, every 10 seconds 2 points are deducted causing a greater penalty for a longer lasting game."
+				+ "<b><br><br>Buttons:</b><br><br>"
+				+ "The following buttons are viewable at the bottom or top of the screen (depending on your UI settings):"
+				+"<br><br>You may display game rules as you please using the show rules button."
+				+"<br><br>You may pause and resume the timer as you wish using the timer pause/start timer button."
+				+"<br><br>You may also save a state and load as desired using the appropriate buttons."
+				+"<br><br>You may start a new game at any time with the new game button."
+				+"<br><br>You may return to the main menu at any time with the main menu button.";
 
 		table = myTable;
 		frame = myFrame;
@@ -689,7 +689,7 @@ public class FlowerBed extends GameMode
 		for (int x = stack.size() - 1; x >= 0; x--)
 		{
 			Card temp = (Card) stack.get(x);
-			temp.getSuit();
+			//temp.getSuit();
 			if(temp.contains(p)) {
 				c = temp;
 			}
@@ -1046,7 +1046,13 @@ public class FlowerBed extends GameMode
 		if (checkForWin && gameOver)
 		{
 			mainMenu.updateScores(gameName, score, time, true);
-			JOptionPane.showMessageDialog(table, "Congratulations! You've Won!");
+			//JOptionPane.showMessageDialog(table, "Congratulations! You've Won!");
+			
+			ImageIcon myCard;
+			myCard = new ImageIcon(FlowerBed.this.getClass().getResource("Victory/winner.gif"));
+			JLabel test = new JLabel(myCard);
+			test.setBounds(0, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
+			table.add(test);
 			//statusBox.setText("Game Over!");
 		}
 		// RESET VARIABLES FOR NEXT EVENT
@@ -1059,6 +1065,77 @@ public class FlowerBed extends GameMode
 		checkForWin = false;
 		gameOver = false;
 	}// end mousePressed()
+
+	public void mouseMoved(MouseEvent e) {
+		start = e.getPoint();
+		boolean stopSearch = false;
+
+		if(focusedStack != null) {
+			if(focusedStack.contains(start) && focusedStack.showSize() > 0) {
+				if(focusedCard == getTop(focusedStack.getStack(), start)) {
+					stopSearch = true;
+				}
+			}
+		}
+
+
+		for (int x = 0; x < NUM_PLAY_DECKS; x++)
+		{
+			if (stopSearch)
+				break;
+			FlowerBedCardStack tempSource = playCardStack[x];
+			// pinpointing exact card pressed-
+			if(tempSource.contains(start) && tempSource.showSize() > 0) {
+				for (int y = 0; y < tempSource.showSize(); y++)
+				{
+					Card c = (Card) tempSource.getStack().get(y);
+					if(c == getTop(tempSource.getStack(), start)) {
+						focusedStack = tempSource;
+						focusedCard = c;
+						stopSearch = true;
+					}
+				}
+			}
+		}
+
+		if(stopSearch == false) {
+			FlowerBedCardStack tempSource = deck;
+			// pinpointing exact card pressed
+			Vector<Card> stack = tempSource.getStack();
+			for (int x = 0; x < tempSource.showSize(); x++)
+			{
+				Card c = (Card) stack.get(x);
+				if(tempSource.contains(start) && c == getTop(tempSource.getStack(), start)) {
+					focusedStack = tempSource;
+					focusedCard = c;
+					stopSearch = true;
+					break;
+				}                                    
+			}
+		}
+					
+		
+		
+
+		for (int x = 0; x < NUM_FINAL_DECKS; x++)
+		{
+			if (final_cards[x].contains(start))
+			{
+				focusedStack = final_cards[x];
+				focusedCard = final_cards[x].getLast();
+				stopSearch = true;
+				break;
+			}
+		}
+
+
+		if(focusedCard != null) {
+			previewCard.setSuit(focusedCard.getSuit());
+			previewCard.setValue(focusedCard.getValue());
+			previewCard.refreshImage();
+			previewCard.repaint();
+		}
+	}
 
 	public void newGame() {
 		updateScores();
@@ -1137,7 +1214,21 @@ public class FlowerBed extends GameMode
 
 		// reset time
 		time = 0;
-    
+
+		previewCardStack = new FlowerBedCardStack(false);
+		previewCard = new PreviewCard();
+		previewCard.setXY(new Point(500, 150));
+		previewCard.setFaceup();
+		//previewCardStack.v.add(previewCard.setFaceup());
+		table.add(previewCard);
+		previewText.setText("Card View: ");
+		previewText.setFont(new Font("Arial", Font.BOLD, 15));
+		previewText.setEditable(false);
+		previewText.setOpaque(false);
+		previewText.setBounds(1020, 275, 120, 60);
+		table.add(previewText);
+		previewCard.repaint();
+
 		table.repaint();
 
 		if(GameMode.autoMove) {

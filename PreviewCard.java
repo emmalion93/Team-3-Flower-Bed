@@ -7,25 +7,20 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+
 
 import java.awt.Graphics2D;
 
-class Card extends JPanel
+class PreviewCard extends JComponent
 {
-	public static enum Value
-	{
-		ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING
-	}
+	
 
-	public static enum Suit
-	{
-		SPADES, CLUBS, DIAMONDS, HEARTS
-	}
+	private Card.Suit _suit;
 
-	private Suit _suit;
-
-	private Value _value;
+	private Card.Value _value;
 
 	private Boolean _faceup;
 
@@ -37,15 +32,16 @@ class Card extends JPanel
 	private int x; // used for relative positioning within CardStack Container
 	private int y;
 	
-	public static final int CARD_HEIGHT = 150;
-	public static final int CARD_WIDTH = 100;
+	public static final int CARD_HEIGHT = 200;
+	public static final int CARD_WIDTH = 133;
 	public static final int CORNER_ANGLE = 25;
-	public int scale = 1;
 
 	private String imageInfo;
 	private Image myImage;
 
-	Card(Suit suit, Value value)
+    private JEditorPane Text = new JEditorPane();
+
+	PreviewCard(Card.Suit suit, Card.Value value)
 	{
 		_suit = suit;
 		_value = value;
@@ -64,8 +60,9 @@ class Card extends JPanel
 		}
 	}
 
-	Card()
+	PreviewCard()
 	{
+        this.setLayout(null);
 		_suit = Card.Suit.CLUBS;
 		_value = Card.Value.ACE;
 		_faceup = false;
@@ -83,7 +80,7 @@ class Card extends JPanel
 		}
 	}
 
-	public Suit getSuit()
+	public Card.Suit getSuit()
 	{
 		/*switch (_suit)
 		{
@@ -103,7 +100,7 @@ class Card extends JPanel
 		return _suit;
 	}
 
-	public Value getValue()
+	public Card.Value getValue()
 	{
 		/*switch (_value)
 		{
@@ -174,20 +171,27 @@ class Card extends JPanel
 	{
 		x = p.x;
 		y = p.y;
-
+        _location.x = x;
+        _location.y = y;
+        setBounds(x, y, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
 	}
 
-	public void setSuit(Suit suit)
+    public void setText()
+	{
+		
+	}
+
+	public void setSuit(Card.Suit suit)
 	{
 		_suit = suit;
 	}
 
-	public void setValue(Value value)
+	public void setValue(Card.Value value)
 	{
 		_value = value;
 	}
 
-	public Card setFaceup()
+	public PreviewCard setFaceup()
 	{
 		_faceup = true;
 		try {
@@ -198,7 +202,7 @@ class Card extends JPanel
 		return this;
 	}
 
-	public Card setFacedown()
+	public PreviewCard setFacedown()
 	{
 		_faceup = false;
 		try {
@@ -212,7 +216,7 @@ class Card extends JPanel
 	@Override
 	public boolean contains(Point p)
 	{
-		Rectangle rect = new Rectangle(whereAmI.x, whereAmI.y, Card.CARD_WIDTH, Card.CARD_HEIGHT);
+		Rectangle rect = new Rectangle(whereAmI.x, whereAmI.y, PreviewCard.CARD_WIDTH, PreviewCard.CARD_HEIGHT);
 		return (rect.contains(p));
 	}
   
@@ -299,7 +303,7 @@ class Card extends JPanel
 
 	private Image getImage() throws IOException {
 		Image myCard = ImageIO.read(new File(GameMode.cardPath + imageInfo));
-		myCard = myCard.getScaledInstance(CARD_WIDTH * scale, CARD_HEIGHT * scale, Image.SCALE_SMOOTH);
+		myCard = myCard.getScaledInstance(CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH);
 		return myCard;
 	}
 
@@ -310,11 +314,11 @@ class Card extends JPanel
 	}
 
 	@Override
-	public void paintComponent(Graphics g)
+	protected void paintComponent(Graphics g)
 	{
 		if(myImage != null) {
 			g.drawImage(myImage, _location.x, _location.y, null);
 		}
 	}
 
-}// END Card
+}// END PreviewCard

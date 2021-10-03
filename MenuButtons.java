@@ -474,6 +474,14 @@ public class MenuButtons {
 			}
 		}
 
+		@Override
+		public void mouseMoved(MouseEvent e)
+		{
+			if(currentGameMode != null) {
+				currentGameMode.mouseMoved(e);
+			}
+		}
+
 	}
 
 
@@ -557,7 +565,7 @@ public class MenuButtons {
                 saveButton.setBounds(905, 0, 125, 30);
                 loadButton.setBounds(1030, 0, 125, 30);
                 optionsButton.setBounds(1155, 0, 130, 30);
-				undoButton.setBounds(1025, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
+				undoButton.setBounds(1030, FlowerBed.TABLE_HEIGHT - 100, 125, 30);
 				redoButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
 				hintButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 130, 130, 30);
                 break;
@@ -573,7 +581,7 @@ public class MenuButtons {
                 saveButton.setBounds(905, FlowerBed.TABLE_HEIGHT - 70, 125, 30);
                 loadButton.setBounds(1030, FlowerBed.TABLE_HEIGHT - 70, 125, 30);
                 optionsButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 70, 130, 30);
-				undoButton.setBounds(1025, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
+				undoButton.setBounds(1030, FlowerBed.TABLE_HEIGHT - 100, 125, 30);
 				redoButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 100, 130, 30);
 				hintButton.setBounds(1155, FlowerBed.TABLE_HEIGHT - 130, 130, 30);
                 break;
