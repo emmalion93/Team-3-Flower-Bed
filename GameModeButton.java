@@ -97,6 +97,7 @@ public class GameModeButton {
     }
 
     public boolean getFavorite() { return favorite; }
+	
     private class ChooseGameListener implements ActionListener
 	{
 		@Override
