@@ -116,7 +116,9 @@ public class StartMenu {
 
 		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
 		myGameModes.add(new Solitaire(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
-      
+		
+
+
 		int count = 0;
 		for (int x = 0; x < myGameModes.size(); x++)
 		{

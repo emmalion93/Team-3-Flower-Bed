@@ -85,6 +85,7 @@ public class MenuButtons {
 		private JPanel confirmTable = new JPanel();
 		private JEditorPane confirmText = new JEditorPane();
 		private JButton confirmButton = new JButton("Confirm");
+		private ActionListener myConfirm = new confirmMenuListener();
 
 		@Override
 		public void actionPerformed(ActionEvent e)
@@ -109,7 +110,8 @@ public class MenuButtons {
 
 			
 			confirmButton.setBounds(125, 80, 130, 30);
-			confirmButton.addActionListener(new confirmMenuListener());
+			confirmButton.removeActionListener(myConfirm);
+			confirmButton.addActionListener(myConfirm);
 			confirmButton.setEnabled(true);
 
 			confirmTable.add(confirmButton);
@@ -250,6 +252,7 @@ public class MenuButtons {
 		private JEditorPane volumeText = new JEditorPane();
 		private JEditorPane musicVolumeText = new JEditorPane();
 		private JButton confirmButton = new JButton("Confirm");
+		private ActionListener myConfirm = new confirmOptionsListener();
 		private JEditorPane dropDownText = new JEditorPane();
 		private String[] dropDownOptions = { "Top", "Bottom" };
 		private JComboBox<String> dropDown = new JComboBox<String>(dropDownOptions);
@@ -341,7 +344,8 @@ public class MenuButtons {
 
 			
 			confirmButton.setBounds(135, 330, 130, 30);
-			confirmButton.addActionListener(new confirmOptionsListener());
+			confirmButton.removeActionListener(myConfirm);
+			confirmButton.addActionListener(myConfirm);
 			confirmButton.setEnabled(true);
 
 			ruleTable.add(confirmButton);
@@ -367,7 +371,6 @@ public class MenuButtons {
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				
 				FloatControl volumeControl = (FloatControl) StartMenu.music.getControl(FloatControl.Type.MASTER_GAIN);
 				volumeControl.setValue(StartMenu.musicVolume);
 				if(dropDown.getSelectedItem().equals("Top")) {
