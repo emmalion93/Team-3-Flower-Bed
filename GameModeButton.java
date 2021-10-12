@@ -35,9 +35,9 @@ public class GameModeButton {
     private int x_pos;
     private int y_pos;
     private boolean favorite;
-	private StartMenu menu;
+	private Platform menu;
 
-    public GameModeButton(GameMode myGM, JPanel myTable, JFrame myFrame, StartMenu myMenu) {
+    public GameModeButton(GameMode myGM, JPanel myTable, JFrame myFrame, Platform myMenu) {
         gameMode = myGM;
         name = myGM.getName();
         table = myTable;

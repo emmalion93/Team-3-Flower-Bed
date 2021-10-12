@@ -1,7 +1,5 @@
 // created by team-3
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -56,7 +54,7 @@ public class Solitaire extends GameMode
 	private CardStack transferStack = new CardStack(false);
 
 
-	public Solitaire(JPanel myTable, JFrame myFrame, StartMenu myMenu, String myCardPath, String myBackgroundPath) {
+	public Solitaire(JPanel myTable, JFrame myFrame, Platform myMenu, String myCardPath, String myBackgroundPath) {
 		gameName = "Klondike";
 		gameDesc = "Traditional Solitaire";
 		gameRules = "<b>Klondike Solitaire Rules</b>"
@@ -93,11 +91,11 @@ public class Solitaire extends GameMode
 		backgroundPath = myBackgroundPath;
 	}
 
-	public void startMenu() { 
+	public void returnToPlatform() { 
 		updateScores();
 		score = 0;
 		time = 0;
-		mainMenu.returnToMenu();
+		mainMenu.returnToPlatform();
 
 	}
 
