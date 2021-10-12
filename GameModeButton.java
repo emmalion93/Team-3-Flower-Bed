@@ -50,12 +50,12 @@ public class GameModeButton {
 
         highScoreBox = new JTextPane();
         highScoreBox.setEditable(false);
-		highScoreBox.setBackground(Color.GREEN);
+		highScoreBox.setBackground(new Color(180,180,180));
 		highScoreBox.setFont(new Font("Arial", Font.PLAIN, 12));
 
 		totalGamesBox = new JTextPane();
         totalGamesBox.setEditable(false);
-		totalGamesBox.setBackground(Color.GREEN);
+		totalGamesBox.setBackground(new Color(180,180,180));
 		totalGamesBox.setFont(new Font("Arial", Font.PLAIN, 12));
 
 		refreshScores();
@@ -63,7 +63,7 @@ public class GameModeButton {
         checkBox= new JCheckBox();
         checkBox.addActionListener(new CheckFavoritesListener());
         checkBox.setName(name);
-		checkBox.setBackground(Color.GREEN);
+		checkBox.setBackground(new Color(180,180,180));
 		checkBox.setSelected(favorite);
 
         gameinformationButton = new JButton("?");
