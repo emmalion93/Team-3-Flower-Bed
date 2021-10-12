@@ -114,6 +114,19 @@ public class FlowerBed extends GameMode
 		updateScores();
 		score = 0;
 		time = 0;
+		undoStack.clear();
+		redoStack.clear();
+		deck.makeEmpty();
+		for (int x = 0; x < NUM_FINAL_DECKS; x++)
+		{
+			final_cards[x].makeEmpty();
+		}
+		
+		
+		for (int x = 0; x < NUM_PLAY_DECKS; x++)
+		{
+			playCardStack[x].makeEmpty();
+		}
 		mainMenu.returnToMenu();
 	}
 
@@ -223,6 +236,8 @@ public class FlowerBed extends GameMode
 			source =  redoStack.get(redoStack.size() - 1).getLastCardStack();
 			card = redoStack.get(redoStack.size() - 1).getCard();
 			dest = redoStack.get(redoStack.size() - 1).getCardStack();
+			setScore(redoStack.get(redoStack.size() - 1).getScoreValue());
+
 			undoStack.add(redoStack.get(redoStack.size() - 1));
 			redoStack.remove(redoStack.size() - 1);
 
@@ -277,6 +292,7 @@ public class FlowerBed extends GameMode
 			source =  undoStack.get(undoStack.size() - 1).getCardStack();
 			card = undoStack.get(undoStack.size() - 1).getCard();
 			dest = undoStack.get(undoStack.size() - 1).getLastCardStack();
+			setScore(undoStack.get(undoStack.size() - 1).getScoreValue() * -1);
 			redoStack.add( undoStack.get(undoStack.size() - 1));
 			undoStack.remove(undoStack.size() - 1);
 
@@ -398,7 +414,7 @@ public class FlowerBed extends GameMode
 				source =  tempXStack;
 				card = cMoving;
 				dest = tempYStack;
-				undoStack.add(new CardHistory(card, dest, source));
+				undoStack.add(new CardHistory(card, dest, source, 0));
 				redoStack.clear();
 
 				Card c = card;
@@ -436,7 +452,7 @@ public class FlowerBed extends GameMode
 				source =  tempXStack;
 				card = cMoving;
 				dest = tempYStack;
-				undoStack.add(new CardHistory(card, dest, source));
+				undoStack.add(new CardHistory(card, dest, source, 0));
 				redoStack.clear();
 
 				Card c = card;
@@ -572,7 +588,7 @@ public class FlowerBed extends GameMode
 			source =  tempXStack;
 			card = cMoving;
 			dest = tempYStack;
-			undoStack.add(new CardHistory(card, dest, source));
+			undoStack.add(new CardHistory(card, dest, source, 0));
 			redoStack.clear();
 
 			Card c = card;
@@ -612,7 +628,7 @@ public class FlowerBed extends GameMode
 				source =  tempXStack;
 				card = cMoving;
 				dest = tempYStack;
-				undoStack.add(new CardHistory(card, dest, source));
+				undoStack.add(new CardHistory(card, dest, source, 0));
 				redoStack.clear();
 
 				Card c = card;
@@ -785,7 +801,7 @@ public class FlowerBed extends GameMode
 					movedCard.setXY(dest.getXY());
 					table.remove(prevCard);
 					dest.putFirst(movedCard);
-					undoStack.add(new CardHistory(movedCard, dest, source));
+					undoStack.add(new CardHistory(movedCard, dest, source, 5));
 					redoStack.clear();
 
 					table.repaint();
@@ -827,7 +843,7 @@ public class FlowerBed extends GameMode
 					{
 						dest.push(movedCard);
 						table.remove(prevCard);
-						undoStack.add(new CardHistory(movedCard, dest, source));
+						undoStack.add(new CardHistory(movedCard, dest, source, 10));
 						redoStack.clear();
 
 						dest.repaint();
@@ -845,7 +861,7 @@ public class FlowerBed extends GameMode
 					System.out.println("Destin" + dest.showSize());
 					dest.push(movedCard);
 					table.remove(prevCard);
-					undoStack.add(new CardHistory(movedCard, dest, source));
+					undoStack.add(new CardHistory(movedCard, dest, source, 10));
 					redoStack.clear();
 
 					dest.repaint();
@@ -889,16 +905,19 @@ public class FlowerBed extends GameMode
 
 					dest.repaint();
 					
-					undoStack.add(new CardHistory(c, dest, source));
 					redoStack.clear();
 
 					table.repaint();
 					System.out.print("Destination ");
 					dest.showSize();
-					if (sourceIsFinalDeck)
+					if (sourceIsFinalDeck) {
 						setScore(15);
-					else
+						undoStack.add(new CardHistory(c, dest, source, 15));
+					}
+					else {
 						setScore(10);
+						undoStack.add(new CardHistory(c, dest, source, 10));
+					}
 					System.out.println("0");
 					validMoveMade = true;
 					break;
@@ -921,7 +940,7 @@ public class FlowerBed extends GameMode
 
 					dest.repaint();
 
-					undoStack.add(new CardHistory(c, dest, source));
+					undoStack.add(new CardHistory(c, dest, source, 5));
 					redoStack.clear();
 
 					table.repaint();
@@ -961,7 +980,7 @@ public class FlowerBed extends GameMode
 
 							dest.repaint();
 
-							undoStack.add(new CardHistory(c, dest, source));
+							undoStack.add(new CardHistory(c, dest, source, 10));
 							redoStack.clear();
 
 							table.repaint();
@@ -992,7 +1011,7 @@ public class FlowerBed extends GameMode
 
 						dest.repaint();
 
-						undoStack.add(new CardHistory(c, dest, source));
+						undoStack.add(new CardHistory(c, dest, source, 10));
 						redoStack.clear();
 
 						table.repaint();
@@ -1050,9 +1069,9 @@ public class FlowerBed extends GameMode
 			
 			ImageIcon myCard;
 			myCard = new ImageIcon(FlowerBed.this.getClass().getResource("Victory/winner.gif"));
-			JLabel test = new JLabel(myCard);
-			test.setBounds(0, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
-			table.add(test);
+			JLabel winnerImage = new JLabel(myCard);
+			winnerImage.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
+			table.add(winnerImage);
 			//statusBox.setText("Game Over!");
 		}
 		// RESET VARIABLES FOR NEXT EVENT

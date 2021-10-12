@@ -260,7 +260,7 @@ public class MenuButtons {
 		private String[] cardDropDownOptions = { "Ocean", "Original" };// "CardImages\\greywyvern-cardset\\", "CardImages\\original\\"
 		private JComboBox<String> cardDropDown = new JComboBox<String>(cardDropDownOptions);
 		private JEditorPane backgroundDropText = new JEditorPane();
-		private String[] backgroundDropDownOptions = { "Green", "White" };
+		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue" };
 		private JComboBox<String> backgroundDropDown = new JComboBox<String>(backgroundDropDownOptions);
 		private JEditorPane autoMoveText = new JEditorPane();
 		private JCheckBox checkBox;
@@ -331,7 +331,7 @@ public class MenuButtons {
 
 			checked = GameMode.autoMove;
 
-			autoMoveText.setText("Auot Move: ");
+			autoMoveText.setText("Auto Move: ");
 			autoMoveText.setFont(new Font("Arial", Font.BOLD, 15));
 			autoMoveText.setEditable(false);
 			autoMoveText.setOpaque(false);
@@ -390,11 +390,14 @@ public class MenuButtons {
 
 				GameMode.autoMove = checked;
 
-				if(backgroundDropDown.getSelectedItem().equals("Green")) {
-					table.setBackground(new Color(0, 180, 0));
-				} else if(backgroundDropDown.getSelectedItem().equals("White")) {
-					table.setBackground(Color.WHITE);
+				if(StartMenu.backgroundColors.length > backgroundDropDown.getSelectedIndex()) {
+					table.setBackground(StartMenu.backgroundColors[backgroundDropDown.getSelectedIndex()]);
 				}
+				/*if(backgroundDropDown.getSelectedItem().equals("Green")) {
+					table.setBackground(StartMenu.backgroundColors[0]);
+				} else if(backgroundDropDown.getSelectedItem().equals("White")) {
+					table.setBackground(StartMenu.backgroundColors[1]);
+				}*/
 				
 				positionButtons(_Direction);
 				ruleFrame.dispose();
@@ -436,6 +439,9 @@ public class MenuButtons {
 		public void actionPerformed(ActionEvent e)
 		{
 			currentGameMode.redo();
+			String newScore = "Score: " + currentGameMode.score;
+			scoreBox.setText(newScore);
+			scoreBox.repaint();
 		}
 	}
 
@@ -454,6 +460,9 @@ public class MenuButtons {
 		public void actionPerformed(ActionEvent e)
 		{
 			currentGameMode.undo();
+			String newScore = "Score: " + currentGameMode.score;
+			scoreBox.setText(newScore);
+			scoreBox.repaint();
 		}
 	}
 

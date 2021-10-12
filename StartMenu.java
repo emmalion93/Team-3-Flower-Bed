@@ -43,6 +43,9 @@ public class StartMenu {
 	public static int volume = -40;
 	public static int musicVolume = -40;
 
+	// Add these colors as options in MenuButtons->backgroundDropDownOptions
+	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255) };
+
 	private class ShowFavoritesListener implements ActionListener
 	{
 		@Override
@@ -244,7 +247,7 @@ public class StartMenu {
 		frame.setSize(FlowerBed.TABLE_WIDTH, FlowerBed.TABLE_HEIGHT);
 
 		table.setLayout(null);
-		table.setBackground(new Color(0, 180, 0));
+		table.setBackground(backgroundColors[0]);
 
 		contentPane = frame.getContentPane();
 		contentPane.add(table);
