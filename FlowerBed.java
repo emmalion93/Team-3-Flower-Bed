@@ -1,26 +1,24 @@
 // created by team-3
-import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
-
-import javax.imageio.ImageIO;
-import java.awt.Image;
 
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Font;
 
+/**
+ * A child class of GameMode. Contains the actual implementation for the Flower Bed version of solitaire. 
+ * Methods from the parent class should be overridden to give functionality specific to this game mode.
+ * Contains and manages FlowerBedCardStacks and their respective Card objects.
+ * @author Emily
+ */
 public class FlowerBed extends GameMode
 {
 	// CONSTANTS
@@ -53,7 +51,6 @@ public class FlowerBed extends GameMode
 	private Card card = null; // card to be moved
 	private Card focusedCard = null; // card to be focused
 	private PreviewCard previewCard = null; // UI that shows the currently focused card
-	private FlowerBedCardStack previewCardStack;
 	private JEditorPane previewText = new JEditorPane();
 	private List<CardHistory> undoStack = new ArrayList<CardHistory>();
 	private List<CardHistory> redoStack = new ArrayList<CardHistory>();
@@ -66,7 +63,15 @@ public class FlowerBed extends GameMode
 	// used for moving a stack of cards
 	private FlowerBedCardStack transferStack = new FlowerBedCardStack(false);
 
-	public FlowerBed(JPanel myTable, JFrame myFrame, StartMenu myMenu, String myCardPath, String myBackgroundPath) {
+	/**
+         * The constructor for the FlowerBed class. Sets the gameName, gameDesc, and gameRules for this game mode. 
+         * @param myTable Used to set the table variable.
+         * @param myFrame used to set the frame variable.
+         * @param myMenu used to set the menu variable.
+         * @param myCardPath used to set the cardPath variable.
+         * @param myBackgroundPath used to set the backgroundPath variable.
+         */
+	public FlowerBed(JPanel myTable, JFrame myFrame, Platform myMenu, String myCardPath, String myBackgroundPath) {
 		gameName = "Flower Bed";
 		gameDesc = "Move cards one at a time onto stacks regardless of suit/color to fill foundations.";
 	
@@ -110,7 +115,7 @@ public class FlowerBed extends GameMode
 
 	// BUTTON LISTENERS
 
-	public void startMenu() { 
+	public void returnToPlatform() { 
 		updateScores();
 		score = 0;
 		time = 0;
@@ -127,7 +132,7 @@ public class FlowerBed extends GameMode
 		{
 			playCardStack[x].makeEmpty();
 		}
-		mainMenu.returnToMenu();
+		mainMenu.returnToPlatform();
 	}
 
 	public void saveGame() {
@@ -246,7 +251,7 @@ public class FlowerBed extends GameMode
 
 
 			c.repaint();
-			// if playstack, turn next card up
+
 			if (source.getFirst() != null)
 			{
 				Card temp = source.getFirst().setFaceup();
@@ -1234,11 +1239,9 @@ public class FlowerBed extends GameMode
 		// reset time
 		time = 0;
 
-		previewCardStack = new FlowerBedCardStack(false);
 		previewCard = new PreviewCard();
 		previewCard.setXY(new Point(500, 150));
 		previewCard.setFaceup();
-		//previewCardStack.v.add(previewCard.setFaceup());
 		table.add(previewCard);
 		previewText.setText("Card View: ");
 		previewText.setFont(new Font("Arial", Font.BOLD, 15));

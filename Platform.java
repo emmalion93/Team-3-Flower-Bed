@@ -15,36 +15,57 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class StartMenu {
-
-    // CONSTANTS
-	/*public static final int TABLE_HEIGHT = Card.CARD_HEIGHT * 4;
-	public static final int TABLE_WIDTH = (Card.CARD_WIDTH * 12) + 100;*/
+/**
+ * The game platform that contains and manages all the GameMode and UI objects. 
+ * Contains methods that save, load, or manage data and methods for allowing a 
+ * player to select between game modes.
+ * @author Emily
+ */
+public class Platform {
 
     // GUI COMPONENTS (top level)
     private static final JFrame frame = new JFrame("Solitaire");
     protected static final JPanel table = new JPanel();
-	protected static final MenuButtons menuButtons = new MenuButtons(table, frame);
+	protected static final UI menuButtons = new UI(table, frame);
 
 	private JButton showFavoritesButton = new JButton("Show All");
 	private boolean showFavorites = false;
 
 	private List<GameMode> myGameModes = new ArrayList<GameMode>();
 	private List<GameModeButton> gameModeButtons = new ArrayList<GameModeButton>();
+	/**
+     * The currently running music clip.
+     */
 	public static Clip music;
+	/**
+     * the maximum value for volume
+     */
 	public static int volumeMax = 6;
+	/**
+     * The minimum value for volume.
+     */
 	public static int volumeMin = -54;
+	/**
+     * The starting value for volume. 
+     */
 	public static int volumeStart = -40;
+	/**
+     * The volume of the special effects. 
+     */
 	public static int volume = -40;
+	/**
+     * The volume of the music.
+     */
 	public static int musicVolume = -40;
 
 	// Add these colors as options in MenuButtons->backgroundDropDownOptions
-	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255) };
+	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255), Color.decode("#C594343"), Color.decode("#6F7498"), Color.decode("#A3B7F9"),  Color.decode("#092C48")};
 
 	private class ShowFavoritesListener implements ActionListener
 	{
@@ -100,7 +121,7 @@ public class StartMenu {
 	private void startMusic() {
 		// TODO music starts in loud 
 		try {
-			AudioInputStream audioStream = AudioSystem.getAudioInputStream(this.getClass().getResource("Sounds/Loop_The_Old_Tower_Inn.wav"));
+			AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File("Sounds/Loop_The_Old_Tower_Inn.wav"));
 			music = AudioSystem.getClip();
 			music.open(audioStream);
 			music.loop(Clip.LOOP_CONTINUOUSLY);
@@ -140,6 +161,13 @@ public class StartMenu {
 		table.repaint();
 	}
 
+	/**
+     * Updates scores and stats in the database. called from a GameMode child class when a game is won or lost.
+     * @param gameName The name of the game wanting to update its scores.
+     * @param score The current score of the game.
+     * @param time The current time of the game.
+     * @param win Whether the game was won or lost.
+     */
 	public void updateScores(String gameName, int score, int time, boolean win) {
 		BufferedReader reader;
 		List<String> lines = new ArrayList<String>();
@@ -197,6 +225,12 @@ public class StartMenu {
 		}
 	}
 
+	/**
+     * Saves the current state of the game to the database. called from a GameMode 
+     * child class.
+     * @param cardList a string containing each stack of cards
+     * (example: value,suit:value,suit: then repeat on new line for each stack)
+     */
 	public void saveGame(String cardList) {
 		try {
 			PrintWriter writer = new PrintWriter("SavedFile.txt");
@@ -207,6 +241,12 @@ public class StartMenu {
 		}
 	}
 
+	/**
+     * loads the current state of the game to the database. called from a GameMode 
+     * child class and returns stack and score/time information.
+     * @return List of strings containing each stack of cards and the current score/time
+     * (example: value,suit:value,suit: for each stack, final two lines are score and time)
+     */
 	public List<String> loadGame() {
 		BufferedReader reader;
 		List<String> lines = new ArrayList<String>();
@@ -223,7 +263,10 @@ public class StartMenu {
 		return lines;
 	}
 
-	public void returnToMenu() {
+	/**
+     * Stops currently running game and shows the platform menu.
+     */
+	public void returnToPlatform() {
 		table.removeAll();
 		showFavorites();
 		menuButtons.addButtons();
@@ -233,6 +276,10 @@ public class StartMenu {
 		table.repaint();
 	}
 
+	/**
+     * Disables the platform menu and starts the selected game.
+     * @param gameMode the selected game.
+     */
 	public void startGame(GameMode gameMode) {
 		table.removeAll();
 		menuButtons.addButtons();
@@ -242,6 +289,10 @@ public class StartMenu {
 		gameMode.execute();
 	}
 
+	/**
+     * Sets the frame and table information, generates the UI, and starts the 
+     * platform menu for the first time.
+     */
 	public static void execute() {
 		Container contentPane;
 		frame.setSize(FlowerBed.TABLE_WIDTH, FlowerBed.TABLE_HEIGHT);
@@ -253,7 +304,7 @@ public class StartMenu {
 		contentPane.add(table);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-		StartMenu menu = new StartMenu();
+		Platform menu = new Platform();
 		menuButtons.generateButtons();
 		menuButtons.disableMainMenuButtons();
         menu.playMainMenu();
@@ -261,7 +312,10 @@ public class StartMenu {
 		frame.setVisible(true);
 	}
 
-
+	/**
+     * Runs the execute method.
+     * @param args
+     */
 	public static void main(String[] args)
 	{
 		execute();

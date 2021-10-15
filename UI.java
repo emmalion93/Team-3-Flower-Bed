@@ -12,7 +12,6 @@ import javax.swing.JTextField;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
 
@@ -23,8 +22,17 @@ import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class MenuButtons {
+/**
+ * Manages all the UI buttons and user interactions and contains the nested event classes 
+ * for those buttons. Each event calls a corresponding method in the currentGameMode.
+ * For example, when the new game button is pressed it calls currentGameMode.newGame().
+ * @author Emily
+ */
+public class UI {
 
+	/**
+     *Contains location information for setting the UI bar.
+     */
     public static enum Direction
 	{
 		LEFT, RIGHT, UP, DOWN;
@@ -32,9 +40,18 @@ public class MenuButtons {
 
     private Direction _Direction = Direction.UP;
 
+	 /**
+     * The Frame the program takes place in. Set in constructor.
+     */
     private JFrame frame;
+	/**
+     *The panel cards and other graphical components are added to. Set in constructor.
+     */
 	protected JPanel table;
 
+	 /**
+     * Reference to the currently running game mode.
+     */
     private GameMode currentGameMode;
 
     private  JEditorPane gameTitle = new JEditorPane("text/html", "");
@@ -52,21 +69,32 @@ public class MenuButtons {
 	private JButton undoButton = new JButton("Undo");
 	private JButton hintButton = new JButton("Hint");
 
-
 	private ScoreClock scoreClock;
 	private boolean timeRunning = false;
 
-    public MenuButtons(JPanel myTable, JFrame myFrame) {
+	/**
+     *The constructor for the UI class.
+     * @param myTable Used to set the table variable.
+     * @param myFrame Used to set the frame variable.
+     */
+    public UI(JPanel myTable, JFrame myFrame) {
         table = myTable;
         frame = myFrame;
-		//startTimer();
     }
 
+	/**
+     * Sets the currentGameMode. Called from Platform.
+     * @param myGameMode Used to set the gameMode variable.
+     */
     public void setGameMode(GameMode myGameMode) {
         currentGameMode = myGameMode;
     }
 
     // BUTTON LISTENERS
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the newGame() method in the currentGameMode). 
+     */
 	private class NewGameListener implements ActionListener
 	{
 		@Override
@@ -79,6 +107,10 @@ public class MenuButtons {
 
 	}
 
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the returnToPlatform() method in the currentGameMode). 
+     */
 	private class MainMenuListener implements ActionListener
 	{
 		private JFrame confirmFrame = new JFrame("Return To Menu");
@@ -126,12 +158,16 @@ public class MenuButtons {
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				currentGameMode.startMenu();
+				currentGameMode.returnToPlatform();
 				confirmFrame.dispose();
 			}
 		}
 	}
 
+	 /**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the saveGame() method in the currentGameMode). 
+     */
 	private class SaveGameListener implements ActionListener
 	{
 		@Override
@@ -141,6 +177,10 @@ public class MenuButtons {
 		}
 	}
 
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the loadGame() method in the currentGameMode). 
+     */
 	private class LoadGameListener implements ActionListener
 	{
 		@Override
@@ -166,6 +206,9 @@ public class MenuButtons {
 		}
 	}
 
+	/**
+     * Updates the timer in the currentGameMode on a set interval and updates the UI components to reflect the change.
+     */
 	protected void updateTimer()
 	{
 		try {
@@ -181,6 +224,9 @@ public class MenuButtons {
 		}
 	}
 
+	/**
+     * Starts a new timer the updates on a fixed interval.
+     */
 	protected void startTimer()
 	{
 		scoreClock = new ScoreClock();
@@ -191,6 +237,9 @@ public class MenuButtons {
 		timer.scheduleAtFixedRate(scoreClock, 1000, 1000);
 	}
 
+	/**
+     * Toggles the current timer on or off depending on its current state.
+     */
 	public void toggleTimer()
 	{
 		if (timeRunning && scoreClock != null)
@@ -203,6 +252,9 @@ public class MenuButtons {
 		}
 	}
 
+	/**
+     * Stops the current timer and resets the UI components to reflect this change.
+     */
 	public void stopTimer()
 	{
 		scoreClock.cancel();
@@ -224,6 +276,10 @@ public class MenuButtons {
 		}
 	}
 
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it opens a window containing currentGameMode.getRules() ). 
+     */
 	private class ShowRulesListener implements ActionListener
 	{
 		@Override
@@ -247,23 +303,24 @@ public class MenuButtons {
 	{
 		private JFrame ruleFrame = new JFrame("OPTIONS");
 		private JPanel ruleTable = new JPanel();
-		private JSlider volumeSlider = new JSlider(JSlider.HORIZONTAL, StartMenu.volumeMin, StartMenu.volumeMax, StartMenu.volumeStart);
-		private JSlider musicVolumeSlider = new JSlider(JSlider.HORIZONTAL, StartMenu.volumeMin, StartMenu.volumeMax, StartMenu.volumeStart);
+		private JSlider volumeSlider = new JSlider(JSlider.HORIZONTAL, Platform.volumeMin, Platform.volumeMax, Platform.volumeStart);
+		private JSlider musicVolumeSlider = new JSlider(JSlider.HORIZONTAL, Platform.volumeMin, Platform.volumeMax, Platform.volumeStart);
 		private JEditorPane volumeText = new JEditorPane();
 		private JEditorPane musicVolumeText = new JEditorPane();
 		private JButton confirmButton = new JButton("Confirm");
-		private ActionListener myConfirm = new confirmOptionsListener();
+		private ActionListener myConfirmListener = new confirmOptionsListener();
 		private JEditorPane dropDownText = new JEditorPane();
 		private String[] dropDownOptions = { "Top", "Bottom" };
 		private JComboBox<String> dropDown = new JComboBox<String>(dropDownOptions);
 		private JEditorPane cardDropText = new JEditorPane();
-		private String[] cardDropDownOptions = { "Ocean", "Original" };// "CardImages\\greywyvern-cardset\\", "CardImages\\original\\"
+		private String[] cardDropDownOptions = { "Ocean", "Original" };
 		private JComboBox<String> cardDropDown = new JComboBox<String>(cardDropDownOptions);
 		private JEditorPane backgroundDropText = new JEditorPane();
-		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue" };
+		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue", "Brown-Color Blind", "Dark Purple-Color Blind", "light Purple-Color Blind", "Dark Blue-Color Blind" };
 		private JComboBox<String> backgroundDropDown = new JComboBox<String>(backgroundDropDownOptions);
 		private JEditorPane autoMoveText = new JEditorPane();
 		private JCheckBox checkBox;
+		private ActionListener myCheckListener = new CheckListener();
 		private boolean checked;
 
 		@Override
@@ -338,14 +395,15 @@ public class MenuButtons {
 			autoMoveText.setBounds(5, 290, 120, 60);
 
 			checkBox= new JCheckBox();
-			checkBox.addActionListener(new CheckListener());
+			checkBox.removeActionListener(myCheckListener);
+			checkBox.addActionListener(myCheckListener);
 			checkBox.setSelected(checked);
 			checkBox.setBounds(150,290,30,30);
 
 			
 			confirmButton.setBounds(135, 330, 130, 30);
-			confirmButton.removeActionListener(myConfirm);
-			confirmButton.addActionListener(myConfirm);
+			confirmButton.removeActionListener(myConfirmListener);
+			confirmButton.addActionListener(myConfirmListener);
 			confirmButton.setEnabled(true);
 
 			ruleTable.add(confirmButton);
@@ -371,8 +429,8 @@ public class MenuButtons {
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				FloatControl volumeControl = (FloatControl) StartMenu.music.getControl(FloatControl.Type.MASTER_GAIN);
-				volumeControl.setValue(StartMenu.musicVolume);
+				FloatControl volumeControl = (FloatControl) Platform.music.getControl(FloatControl.Type.MASTER_GAIN);
+				volumeControl.setValue(Platform.musicVolume);
 				if(dropDown.getSelectedItem().equals("Top")) {
 					_Direction = Direction.UP;
 				} else if(dropDown.getSelectedItem().equals("Bottom")) {
@@ -390,14 +448,9 @@ public class MenuButtons {
 
 				GameMode.autoMove = checked;
 
-				if(StartMenu.backgroundColors.length > backgroundDropDown.getSelectedIndex()) {
-					table.setBackground(StartMenu.backgroundColors[backgroundDropDown.getSelectedIndex()]);
+				if(Platform.backgroundColors.length > backgroundDropDown.getSelectedIndex()) {
+					table.setBackground(Platform.backgroundColors[backgroundDropDown.getSelectedIndex()]);
 				}
-				/*if(backgroundDropDown.getSelectedItem().equals("Green")) {
-					table.setBackground(StartMenu.backgroundColors[0]);
-				} else if(backgroundDropDown.getSelectedItem().equals("White")) {
-					table.setBackground(StartMenu.backgroundColors[1]);
-				}*/
 				
 				positionButtons(_Direction);
 				ruleFrame.dispose();
@@ -425,9 +478,9 @@ public class MenuButtons {
 			{
 				JSlider slider = (JSlider) e.getSource();
 				if(slider.getName() == "musicSlider") {
-					StartMenu.musicVolume = (int)slider.getValue();
+					Platform.musicVolume = (int)slider.getValue();
 				} else {
-					StartMenu.volume = (int)slider.getValue();
+					Platform.volume = (int)slider.getValue();
 				}
 			}
 		}
@@ -466,6 +519,10 @@ public class MenuButtons {
 		}
 	}
 
+	/**
+     * Nested class containing mousePressed, mouseReleased, and mouseMoved methods( 
+     * These methods call their corresponding methods in the currentGameMode).
+     */
 	private class CardMovementManager extends MouseAdapter {
 		@Override
 		public void mousePressed(MouseEvent e)
@@ -496,7 +553,9 @@ public class MenuButtons {
 
 	}
 
-
+	/**
+     * Creates the UI buttons when the UI is first instantiated.
+     */
     public void generateButtons() {
         mainMenuButton.addActionListener(new MainMenuListener());
 
@@ -516,38 +575,21 @@ public class MenuButtons {
 
 		hintButton.addActionListener(new HintListener());
 
-		//mainMenuButton.setBounds(0, TABLE_HEIGHT - 70, 120, 30);
-
-		//newGameButton.setBounds(120, TABLE_HEIGHT - 70, 120, 30);
-
-		//showRulesButton.setBounds(240, TABLE_HEIGHT - 70, 120, 30);
-
 		gameTitle.setText("<b>Team Three's Solitaire</b> <br> CPSC 4900 <br> Fall 2021");
 		gameTitle.setEditable(false);
 		gameTitle.setOpaque(false);
-		//gameTitle.setBounds(775, 20, 100, 100);
 
-		//scoreBox.setBounds(360, TABLE_HEIGHT - 70, 120, 30);
 		scoreBox.setText("Score: 0");
 		scoreBox.setEditable(false);
 		scoreBox.setOpaque(false);
 
-		//timeBox.setBounds(480, TABLE_HEIGHT - 70, 120, 30);
 		timeBox.setText("Seconds: 0");
 		timeBox.setEditable(false);
 		timeBox.setOpaque(false);
 
-		//toggleTimerButton.setBounds(600, TABLE_HEIGHT - 70, 125, 30);
-
-		//statusBox.setBounds(725, TABLE_HEIGHT - 70, 180, 30);
 		statusBox.setEditable(false);
 		statusBox.setOpaque(false);
 
-		//saveButton.setBounds(905, TABLE_HEIGHT - 70, 125, 30);
-
-		//loadButton.setBounds(1030, TABLE_HEIGHT - 70, 125, 30);
-
-		//optionsButton.setBounds(1155, TABLE_HEIGHT - 70, 130, 30);
 		optionsButton.addActionListener(new optionsListener());
 		optionsButton.setEnabled(true);
 
@@ -557,6 +599,10 @@ public class MenuButtons {
 		table.addMouseMotionListener(new CardMovementManager());
     }
 
+	/**
+     * Positions buttons based on the current UI settings.
+     * @param myDirection
+     */
     public void positionButtons(Direction myDirection) {
         _Direction = myDirection;
         switch (_Direction)
@@ -600,6 +646,9 @@ public class MenuButtons {
 		}
     }
 
+	/**
+     * Adds buttons to JPanel.
+     */
     public void addButtons() {
 		table.add(statusBox);
 		table.add(toggleTimerButton);
@@ -618,6 +667,9 @@ public class MenuButtons {
 		table.repaint();
 	}
 
+	/**
+     * Makes non-platform buttons unclickable.
+     */
 	public void disableMainMenuButtons() {
 		toggleTimerButton.setEnabled(false);
 		statusBox.setEnabled(false);
@@ -633,6 +685,9 @@ public class MenuButtons {
 		hintButton.setEnabled(false);
 	}
 
+	/**
+     * Enables all UI buttons.
+     */
 	public void enableAllButtons() {
 		toggleTimerButton.setEnabled(true);
 		statusBox.setEnabled(true);

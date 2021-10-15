@@ -8,11 +8,6 @@ import java.awt.Rectangle;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-
-
-import java.awt.Graphics2D;
 
 class PreviewCard extends JComponent
 {
@@ -38,8 +33,6 @@ class PreviewCard extends JComponent
 
 	private String imageInfo;
 	private Image myImage;
-
-    private JEditorPane Text = new JEditorPane();
 
 	PreviewCard(Card.Suit suit, Card.Value value)
 	{
@@ -174,11 +167,6 @@ class PreviewCard extends JComponent
         _location.x = x;
         _location.y = y;
         setBounds(x, y, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
-	}
-
-    public void setText()
-	{
-		
 	}
 
 	public void setSuit(Card.Suit suit)
