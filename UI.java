@@ -316,7 +316,7 @@ public class UI {
 		private String[] cardDropDownOptions = { "Ocean", "Original" };
 		private JComboBox<String> cardDropDown = new JComboBox<String>(cardDropDownOptions);
 		private JEditorPane backgroundDropText = new JEditorPane();
-		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue" };
+		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue", "Brown-Color Blind", "Dark Purple-Color Blind", "light Purple-Color Blind", "Dark Blue-Color Blind" };
 		private JComboBox<String> backgroundDropDown = new JComboBox<String>(backgroundDropDownOptions);
 		private JEditorPane autoMoveText = new JEditorPane();
 		private JCheckBox checkBox;

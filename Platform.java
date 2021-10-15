@@ -65,7 +65,7 @@ public class Platform {
 	public static int musicVolume = -40;
 
 	// Add these colors as options in MenuButtons->backgroundDropDownOptions
-	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255) };
+	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255), Color.decode("#C594343"), Color.decode("#6F7498"), Color.decode("#A3B7F9"),  Color.decode("#092C48")};
 
 	private class ShowFavoritesListener implements ActionListener
 	{

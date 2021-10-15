@@ -83,68 +83,11 @@ class Card extends JPanel
 
 	public Suit getSuit()
 	{
-		/*switch (_suit)
-		{
-		case HEARTS:
-			//System.out.println("Hearts");
-			break;
-		case DIAMONDS:
-			//System.out.println("Diamonds");
-			break;
-		case SPADES:
-			//System.out.println("Spades");
-			break;
-		case CLUBS:
-			//System.out.println("Clubs");
-			break;
-		}*/
 		return _suit;
 	}
 
 	public Value getValue()
 	{
-		/*switch (_value)
-		{
-		case ACE:
-			//System.out.println(" Ace");
-			break;
-		case TWO:
-			//System.out.println(" 2");
-			break;
-		case THREE:
-			//System.out.println(" 3");
-			break;
-		case FOUR:
-			//System.out.println(" 4");
-			break;
-		case FIVE:
-			//System.out.println(" 5");
-			break;
-		case SIX:
-			//System.out.println(" 6");
-			break;
-		case SEVEN:
-			//System.out.println(" 7");
-			break;
-		case EIGHT:
-			//System.out.println(" 8");
-			break;
-		case NINE:
-			//System.out.println(" 9");
-			break;
-		case TEN:
-			//System.out.println(" 10");
-			break;
-		case JACK:
-			//System.out.println(" Jack");
-			break;
-		case QUEEN:
-			//System.out.println(" Queen");
-			break;
-		case KING:
-			//System.out.println(" King");
-			break;
-		}*/
 		return _value;
 	}
 
@@ -215,7 +158,7 @@ class Card extends JPanel
 	}
   
 	private String getImageInfo() {
-		String s = "";// imageFile;
+		String s = "";
 		switch (_value)
 			{
 			case ACE:
