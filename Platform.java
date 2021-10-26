@@ -9,6 +9,8 @@ import java.awt.event.ActionListener;
 
 import java.util.List;
 import java.util.ArrayList;
+
+import javax.print.attribute.standard.PagesPerMinute;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -64,8 +66,19 @@ public class Platform {
      */
 	public static int musicVolume = -40;
 
+	public static String musicPath = "Sounds/Loop_The_Old_Tower_Inn.wav";
+
 	// Add these colors as options in MenuButtons->backgroundDropDownOptions
 	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255), Color.decode("#C594343"), Color.decode("#6F7498"), Color.decode("#A3B7F9"),  Color.decode("#092C48")};
+
+	private int gridHeight = 6;
+	private int gridWidth = 3;
+	private int gridPage = 0;
+	private int pageSize = gridHeight * gridWidth;
+	private int maxPages = 1;
+
+	private JButton pageLeftButton = new JButton("<");;
+	private JButton pageRightButton = new JButton(">");;
 
 	private class ShowFavoritesListener implements ActionListener
 	{
@@ -82,20 +95,75 @@ public class Platform {
 		}
 	}
 
+	private class PageLeftListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if(gridPage - 1 < 0) {
+				gridPage = maxPages;
+			} else {
+				gridPage -= 1;
+			}
+		}
+	}
+
+	private class PageRightListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if(gridPage + 1 <= maxPages) {
+				gridPage += 1;
+			} else {
+				gridPage = 0;
+			}
+			if (!showFavorites)
+				{
+					showFavorites();
+				} else
+				{
+					showAll();
+				}
+		}
+	}
+
 	private void showFavorites() {
 		table.removeAll();
 		table.add(showFavoritesButton);
+		table.add(pageLeftButton);
+		table.add(pageRightButton);
 
 		showFavoritesButton.setText("Show All");
 		showFavorites = false;
 
 		int count = 0;
+		int row = 0;
+		int col = 0;
+		boolean hide = false;
+		int startCount = pageSize * gridPage;
 		for (int x = 0; x < gameModeButtons.size(); x++)
 		{
 			if(gameModeButtons.get(x).getFavorite()) {
-				int height = 90 + 90 * count;
-				gameModeButtons.get(x).setPosition(20, height);
-				gameModeButtons.get(x).refreshScores();
+
+				if(count >= startCount && count < startCount + pageSize) {
+					if(!hide) {
+						int height = 90 + 100 * row;
+						gameModeButtons.get(x).setPosition(20 + 250 * col, height);
+						gameModeButtons.get(x).refreshScores();
+
+						if(row + 1 < gridHeight) {
+							row += 1;
+						} else {
+							row = 0;
+							if(col + 1 < gridWidth) {
+								col += 1;
+							} else {
+								hide = true;
+							}
+						}
+					}
+				}
 				count++;
 			}
 		}
@@ -106,13 +174,31 @@ public class Platform {
 	private void showAll() {
 		table.removeAll();
 		table.add(showFavoritesButton);
+		table.add(pageLeftButton);
+		table.add(pageRightButton);
 
 		showFavoritesButton.setText("Show Favorites");
 		showFavorites = true;
-		for (int x = 0; x < gameModeButtons.size(); x++)
+		int row = 0;
+		int col = 0;
+		boolean hide = false;
+		for (int x = pageSize * gridPage; x < gameModeButtons.size(); x++)
 		{
-			int height = 90 + 90 * x;
-			gameModeButtons.get(x).setPosition(20, height);
+			if(!hide) {
+				int height = 90 + 100 * row;
+				gameModeButtons.get(x).setPosition(20 + 250 * col, height);
+
+				if(row + 1 < gridHeight) {
+					row += 1;
+				} else {
+					row = 0;
+					if(col + 1 < gridWidth) {
+						col += 1;
+					}else {
+						hide = true;
+					}
+				}
+			}
 		}
 		menuButtons.addButtons();
 		table.repaint();
@@ -121,7 +207,7 @@ public class Platform {
 	private void startMusic() {
 		// TODO music starts in loud 
 		try {
-			AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File("Sounds/Loop_The_Old_Tower_Inn.wav"));
+			AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(musicPath));
 			music = AudioSystem.getClip();
 			music.open(audioStream);
 			music.loop(Clip.LOOP_CONTINUOUSLY);
@@ -140,21 +226,67 @@ public class Platform {
 
 		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
 		myGameModes.add(new Solitaire(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
-		
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
+		myGameModes.add(new FlowerBed(table ,frame, this, GameMode.cardPath, GameMode.backgroundPath));
 
 
-		int count = 0;
-		for (int x = 0; x < myGameModes.size(); x++)
+
+		int col = 0;
+		int row = 0;
+		boolean hide = false;
+		for (int x = pageSize * gridPage; x < myGameModes.size(); x++)
 		{
 			gameModeButtons.add(new GameModeButton(myGameModes.get(x), table, frame, this));
-			if(gameModeButtons.get(x).getFavorite()) {
-				int height = 90 + 90 * count;
-				gameModeButtons.get(x).setPosition(20, height);
-				count++;
+			
+			if(!hide) {
+				if(gameModeButtons.get(x).getFavorite()) {
+					int height = 90 + 100 * row;
+					gameModeButtons.get(x).setPosition(20 + 250 * col, height);
+				}
+
+				if(row + 1 < gridHeight) {
+					row += 1;
+				} else {
+					row = 0;
+					if(col + 1 < gridWidth) {
+						col += 1;
+					} else {
+						hide = true;
+					}
+				}
 			}
 		}
+		maxPages = (int)Math.ceil((double)(gameModeButtons.size() / pageSize));
 
-		showFavoritesButton.setBounds(0, 50, 150, 30);
+		pageLeftButton.addActionListener(new PageLeftListener());
+		pageLeftButton.setBounds(270, 50, 50, 30);
+
+		pageRightButton.addActionListener(new PageRightListener());
+		pageRightButton.setBounds(470, 50, 50, 30);
+
+		showFavoritesButton.setBounds(320, 50, 150, 30);
 		showFavoritesButton.addActionListener(new ShowFavoritesListener());
 		showFavorites();
 		

@@ -149,7 +149,7 @@ public class GameMode {
      */
     protected void playSound(String audioPath) {
         try {
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File("Sounds/Loop_The_Old_Tower_Inn.wav"));
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(audioPath));
             Clip soundEffect = AudioSystem.getClip();
             soundEffect.open(audioStream);
             FloatControl volumeControl = (FloatControl) soundEffect.getControl(FloatControl.Type.MASTER_GAIN);
