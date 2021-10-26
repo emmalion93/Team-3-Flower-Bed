@@ -1,3 +1,6 @@
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -12,6 +15,7 @@ import javax.swing.JTextField;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.awt.Container;
 import java.awt.Font;
 
@@ -318,6 +322,9 @@ public class UI {
 		private JEditorPane backgroundDropText = new JEditorPane();
 		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue", "Brown-Color Blind", "Dark Purple-Color Blind", "light Purple-Color Blind", "Dark Blue-Color Blind" };
 		private JComboBox<String> backgroundDropDown = new JComboBox<String>(backgroundDropDownOptions);
+		private JEditorPane musicDropText = new JEditorPane();
+		private String[] musicDropDownOptions = { "Tavern", "Arcade" };
+		private JComboBox<String> musicDropDown = new JComboBox<String>(musicDropDownOptions);
 		private JEditorPane autoMoveText = new JEditorPane();
 		private JCheckBox checkBox;
 		private ActionListener myCheckListener = new CheckListener();
@@ -336,7 +343,7 @@ public class UI {
 			contentPane.add(ruleTable);
 
 			ruleFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			ruleFrame.setSize(400, 400);
+			ruleFrame.setSize(400, 500);
 
 			volumeText.setText("Effects Volume: ");
 			volumeText.setFont(new Font("Arial", Font.BOLD, 15));
@@ -386,22 +393,29 @@ public class UI {
 			backgroundDropText.setBounds(5, 245, 150, 60);
 			backgroundDropDown.setBounds(150,245,150,30);
 
+			musicDropText.setText("Music: ");
+			musicDropText.setFont(new Font("Arial", Font.BOLD, 15));
+			musicDropText.setEditable(false);
+			musicDropText.setOpaque(false);
+			musicDropText.setBounds(5, 295, 150, 60);
+			musicDropDown.setBounds(150,295,150,30);
+
 			checked = GameMode.autoMove;
 
 			autoMoveText.setText("Auto Move: ");
 			autoMoveText.setFont(new Font("Arial", Font.BOLD, 15));
 			autoMoveText.setEditable(false);
 			autoMoveText.setOpaque(false);
-			autoMoveText.setBounds(5, 290, 120, 60);
+			autoMoveText.setBounds(5, 340, 120, 60);
 
 			checkBox= new JCheckBox();
 			checkBox.removeActionListener(myCheckListener);
 			checkBox.addActionListener(myCheckListener);
 			checkBox.setSelected(checked);
-			checkBox.setBounds(150,290,30,30);
+			checkBox.setBounds(150,340,30,30);
 
 			
-			confirmButton.setBounds(135, 330, 130, 30);
+			confirmButton.setBounds(135, 380, 130, 30);
 			confirmButton.removeActionListener(myConfirmListener);
 			confirmButton.addActionListener(myConfirmListener);
 			confirmButton.setEnabled(true);
@@ -417,6 +431,8 @@ public class UI {
 			ruleTable.add(cardDropText);
 			ruleTable.add(backgroundDropDown);
 			ruleTable.add(backgroundDropText);
+			ruleTable.add(musicDropDown);
+			ruleTable.add(musicDropText);
 			ruleTable.add(checkBox);
 			ruleTable.add(autoMoveText);
 
@@ -429,6 +445,25 @@ public class UI {
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
+				String musicPath = "";
+				if(musicDropDown.getSelectedItem().equals("Tavern")) {
+					musicPath = "Sounds/Loop_The_Old_Tower_Inn.wav";
+				} else if(musicDropDown.getSelectedItem().equals("Arcade")) {
+					musicPath =  "Sounds/boss_battle_#2.wav";
+				}
+
+				try {
+					AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(musicPath));
+					if(Platform.musicPath != musicPath) {
+						Platform.music.stop();
+						Platform.music = AudioSystem.getClip();
+						Platform.music.open(audioStream);
+						Platform.music.loop(Clip.LOOP_CONTINUOUSLY);
+						Platform.musicPath = musicPath;
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 				FloatControl volumeControl = (FloatControl) Platform.music.getControl(FloatControl.Type.MASTER_GAIN);
 				volumeControl.setValue(Platform.musicVolume);
 				if(dropDown.getSelectedItem().equals("Top")) {
