@@ -38,10 +38,7 @@ public class FlowerBed extends GameMode
 	private static FlowerBedCardStack deck; // populated with standard 52 card deck
   
 	// CARD MOVEMENT
-	private Card prevCard = null;// tracking card for waste stack
-	private Card movedCard = null;// card moved from waste stack
 	private boolean sourceIsFinalDeck = false;
-	private boolean putBackOnDeck = true;// used for waste card recycling
 	private boolean checkForWin = false;// should we check if game is over?
 	private boolean gameOver = true;// easier to negate this than affirm it
 	private Point start = null;// where mouse was clicked
@@ -870,8 +867,6 @@ public class FlowerBed extends GameMode
 				break;
 			}
 		}
-		putBackOnDeck = true;
-
 	}
 
 	/**
@@ -884,75 +879,7 @@ public class FlowerBed extends GameMode
 		stop = e.getPoint();
 		// used for status bar updates
 		boolean validMoveMade = false;
-		// SHOW CARD MOVEMENTS
-		if (movedCard != null)
-		{
-			// Moving from SHOW TO PLAY
-			for (int x = 0; x < NUM_PLAY_DECKS; x++)
-			{
-				dest = playCardStack[x];
-				// to empty play stack, only kings can go
-				if (dest.empty() && movedCard != null && dest.contains(stop)
-						&& movedCard.getValue() == Card.Value.KING)
-				{
-					movedCard.setXY(dest.getXY());
-					table.remove(prevCard);
-					dest.putFirst(movedCard);
-					undoStack.add(new CardHistory(movedCard, dest, source, 5));
-					redoStack.clear();
-
-					table.repaint();
-					movedCard = null;
-					putBackOnDeck = false;
-					if(putBackOnDeck) { 
-						//TODO Remove this 
-					}
-					setScore(5);
-					validMoveMade = true;
-					break;
-				}
-			}
-			// Moving from SHOW TO FINAL
-			for (int x = 0; x < NUM_FINAL_DECKS; x++)
-			{
-				dest = final_cards[x];
-				// only aces can go first
-				if (dest.empty() && dest.contains(stop))
-				{
-					if (movedCard.getValue() == Card.Value.ACE)
-					{
-						dest.push(movedCard);
-						table.remove(prevCard);
-						undoStack.add(new CardHistory(movedCard, dest, source, 10));
-						redoStack.clear();
-
-						dest.repaint();
-						table.repaint();
-						movedCard = null;
-						putBackOnDeck = false;
-						setScore(10);
-						validMoveMade = true;
-						break;
-					}
-				}
-				if (!dest.empty() && dest.contains(stop) && validFinalStackMove(movedCard, dest.getLast()))
-				{
-					dest.push(movedCard);
-					table.remove(prevCard);
-					undoStack.add(new CardHistory(movedCard, dest, source, 10));
-					redoStack.clear();
-
-					dest.repaint();
-					table.repaint();
-					movedCard = null;
-					putBackOnDeck = false;
-					checkForWin = true;
-					setScore(10);
-					validMoveMade = true;
-					break;
-				}
-			}
-		}// END SHOW STACK OPERATIONS
+		
 
 		// PLAY STACK OPERATIONS
 		if (card != null && source != null)
@@ -997,7 +924,7 @@ public class FlowerBed extends GameMode
 					validMoveMade = true;
 					break;
 				} else if (dest.empty() && transferStack.showSize() == 1 && dest.contains(stop))
-				{// MOVING TO EMPTY STACK, ONLY KING ALLOWED
+				{// MOVING TO EMPTY STACK
 					Card c = card;
 					source.removeCard(card);
 
