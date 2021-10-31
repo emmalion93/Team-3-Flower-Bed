@@ -13,13 +13,17 @@ import javax.swing.JComponent;
  */
 class FlowerBedCardStack extends JComponent
 {
-	protected final int NUM_CARDS = 52;
+	// Positioning and stack information
 	protected Vector<Card> v;
 	protected boolean playStack = false;
 	protected int SPREAD = 18;
 	protected int _x = 0;
 	protected int _y = 0;
 
+	/**
+	 * Constructor class
+	 * @param isDeck
+	 */
 	public FlowerBedCardStack(boolean isDeck)
 	{
 		this.setLayout(null);
@@ -157,6 +161,9 @@ class FlowerBedCardStack extends JComponent
 		}
 	}
 
+	/**
+	 * Determines if a point(mouse position) is within the bounds of the card stack
+	 */
 	@Override
 	public boolean contains(Point p)
 	{
@@ -189,14 +196,19 @@ class FlowerBedCardStack extends JComponent
 		return c;
 	}
   
+	/**
+	 * Draws the cards in the stack positioned on top of each other with the last card in the stack being the top most card drawn
+	 */
 	@Override
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
+		// if this is a play stack instead of the users hand of cards
 		if (playStack)
 		{
 			removeAll();
 			Point prev = new Point(); // positioning relative to the container
+			// draw them in descending order
 			for (int x = 0; x < v.size(); x++)
             {
 				Card c = v.get(x);
@@ -208,23 +220,26 @@ class FlowerBedCardStack extends JComponent
 			}
 
 		} else {
+			// if this is the users hand of cards
             removeAll();
 			Point prev = new Point(); // positioning relative to the container
 			Point prevWhereAmI = new Point();// abs positioning on the board
-                        
+            
+			// position the cards at the bottom of the screen at the top most location
             for (int x = 0; x < v.size(); x++)
             {
                 Card c = v.get(x);
                             
 				// this origin is point(0,0) inside the cardstack container
-				prev = new Point(+ ((SPREAD * 3) * v.size()), 0);// c.getXY(); // starting deck pos
+				prev = new Point(+ ((SPREAD * 3) * v.size()), 0);
 				add(moveCard(c, prev.x, prev.y ));
 				// setting x & y position
                 Point p = getXY();
 				c.setWhereAmI(new Point(p.x+ ((SPREAD * 3) * v.size()), p.y));
 				prevWhereAmI = c.getWhereAmI();
             }
-                        
+            
+			// spread them out in descending order to the left
             for (int x = 0; x < v.size(); x++)
             {
                 Card c = v.get(x);

@@ -58,6 +58,7 @@ public class UI {
      */
     private GameMode currentGameMode;
 
+	// GUI components
     private  JEditorPane gameTitle = new JEditorPane("text/html", "");
     private JButton showRulesButton = new JButton("Show Rules");
 	private  JButton newGameButton = new JButton("New Game");
@@ -112,8 +113,8 @@ public class UI {
 	}
 
 	/**
-     * Nested class that implements ActionListener(When the button is pressed 
-     * it calls the returnToPlatform() method in the currentGameMode). 
+     * Nested class that implements ActionListener. When the button is pressed 
+     * it prompts the user to make sure they want to end the current game and then calls the returnToPlatform() method in the currentGameMode
      */
 	private class MainMenuListener implements ActionListener
 	{
@@ -123,6 +124,9 @@ public class UI {
 		private JButton confirmButton = new JButton("Confirm");
 		private ActionListener myConfirm = new confirmMenuListener();
 
+		/**
+		 * creates the are you sure frame and its GUI components
+		 */
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
@@ -157,6 +161,9 @@ public class UI {
 			confirmFrame.setVisible(true);
 		}
 
+		/**
+		 * Nested class that implements ActionListener. When the confirm button is pressed it calls the returnToPlatform() method in the currentGameMode
+		 */
 		private class confirmMenuListener implements ActionListener
 		{
 			@Override
@@ -194,6 +201,10 @@ public class UI {
 		}
 	}
 
+	/**
+	 * Nested class that implements ActionListener(When the button is pressed 
+     * it adjust the button text and toggles the timer on or off)
+	 */
     private class ToggleTimerListener implements ActionListener
 	{
 		@Override
@@ -271,6 +282,9 @@ public class UI {
 		timeBox.repaint();
 	}
 
+	/**
+	 * Starts the timer and tells it to update at a set interval
+	 */
 	private class ScoreClock extends TimerTask
 	{
 		@Override
@@ -303,6 +317,10 @@ public class UI {
 		}
 	}
 
+	/**
+	 * Nested class that implements ActionListener for the options button. Creates a new frame with several options for the user to select between and once they hit
+	 *  confirm updates the platform based on those options.
+	 */
     private class optionsListener implements ActionListener
 	{
 		private JFrame ruleFrame = new JFrame("OPTIONS");
@@ -323,13 +341,16 @@ public class UI {
 		private String[] backgroundDropDownOptions = { "Green", "White", "Red", "Blue", "Brown-Color Blind", "Dark Purple-Color Blind", "light Purple-Color Blind", "Dark Blue-Color Blind" };
 		private JComboBox<String> backgroundDropDown = new JComboBox<String>(backgroundDropDownOptions);
 		private JEditorPane musicDropText = new JEditorPane();
-		private String[] musicDropDownOptions = { "Tavern", "Arcade" };
+		private String[] musicDropDownOptions = { "Tavern", "Arcade", "Pink Floyd" };
 		private JComboBox<String> musicDropDown = new JComboBox<String>(musicDropDownOptions);
 		private JEditorPane autoMoveText = new JEditorPane();
 		private JCheckBox checkBox;
 		private ActionListener myCheckListener = new CheckListener();
 		private boolean checked;
 
+		/**
+		 * Creates all the GUI components for the options menu frame
+		 */
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
@@ -440,18 +461,30 @@ public class UI {
 			ruleFrame.setVisible(true);
 		}
 
+		/**
+		 * Nested class that implements the ActionListener for the confirm options button.
+		 */
 		private class confirmOptionsListener implements ActionListener
 		{
+			/**
+			 * adjust the game settings based on the users selected preferences
+			 */
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
+				// sets the temporary music path to the selected music's file path
 				String musicPath = "";
 				if(musicDropDown.getSelectedItem().equals("Tavern")) {
 					musicPath = "Sounds/Loop_The_Old_Tower_Inn.wav";
 				} else if(musicDropDown.getSelectedItem().equals("Arcade")) {
 					musicPath =  "Sounds/boss_battle_#2.wav";
+				} else if(musicDropDown.getSelectedItem().equals("Pink Floyd")) {
+					musicPath =  "Sounds/Several_Species_Of_Small_Furry_Animals.wav";
 				}
 
+				/**
+				 * Checks if the selected music is currently playing and if not, stops the current music and sets the music and the music path in the platform to the temp music path
+				 */
 				try {
 					AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(musicPath));
 					if(Platform.musicPath != musicPath) {
@@ -464,14 +497,20 @@ public class UI {
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+
+				// Adjusts the music volume
 				FloatControl volumeControl = (FloatControl) Platform.music.getControl(FloatControl.Type.MASTER_GAIN);
 				volumeControl.setValue(Platform.musicVolume);
+
+				// Adjust the positioning of the UI components
 				if(dropDown.getSelectedItem().equals("Top")) {
 					_Direction = Direction.UP;
 				} else if(dropDown.getSelectedItem().equals("Bottom")) {
 					_Direction = Direction.DOWN;
 				}
+				positionButtons(_Direction);
 
+				// Adjusts the card image based on the selected cardset
 				if(cardDropDown.getSelectedItem().equals("Ocean")) {
 					GameMode.cardPath = "CardImages/greywyvern-cardset/";
 				} else if(cardDropDown.getSelectedItem().equals("Original")) {
@@ -481,17 +520,22 @@ public class UI {
 					currentGameMode.refreshCards();
 				}
 
+				// changes if the game should automatically move cards to the foundation
 				GameMode.autoMove = checked;
 
+				// changes the background color of the platform
 				if(Platform.backgroundColors.length > backgroundDropDown.getSelectedIndex()) {
 					table.setBackground(Platform.backgroundColors[backgroundDropDown.getSelectedIndex()]);
 				}
 				
-				positionButtons(_Direction);
+				// removes the current options menu 
 				ruleFrame.dispose();
 			}
 		}
 
+		/**
+		 * Nested class that implements the action listener for the check box and adjusted checked accordingly
+		 */
 		private class CheckListener implements ActionListener
 		{
 			@Override
@@ -506,6 +550,9 @@ public class UI {
 			}
 		}
 
+		/**
+		 * Nested class that implements the change listener for the music and volume sliders and adkists the volumes accordingly
+		 */
 		private class SliderListener implements ChangeListener
 		{
 			@Override
@@ -521,6 +568,10 @@ public class UI {
 		}
 	}
 
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the current gameMode to redo the last move and then updates the scores that are displayed). 
+     */
 	private class RedoListener implements ActionListener
 	{
 		@Override
@@ -533,6 +584,10 @@ public class UI {
 		}
 	}
 
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the current gameMode to do a hint move). 
+     */
 	private class HintListener implements ActionListener
 	{
 		@Override
@@ -542,6 +597,10 @@ public class UI {
 		}
 	}
 
+	/**
+     * Nested class that implements ActionListener(When the button is pressed 
+     * it calls the current gameMode to undo the last move and then updates the scores that are displayed). 
+     */
 	private class UndoListener implements ActionListener
 	{
 		@Override
@@ -564,6 +623,7 @@ public class UI {
 		{
 			if(currentGameMode != null) {
 				currentGameMode.mousePressed(e);
+				statusBox.setText("");
 			}
 		}
 
@@ -573,6 +633,11 @@ public class UI {
 			if(currentGameMode != null) {
 				currentGameMode.mouseReleased(e);
 				String newScore = "Score: " + currentGameMode.score;
+				if(newScore.equals(scoreBox.getText())) {
+					statusBox.setText("That Is Not A Valid Move");
+				} else {
+					statusBox.setText("That Is A Valid Move");
+				}
 				scoreBox.setText(newScore);
 				scoreBox.repaint();
 			}

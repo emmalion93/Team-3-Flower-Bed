@@ -10,6 +10,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+/**
+ * The default legacy game included at the start of the semester. Minimal has been changed.
+ */
 public class Solitaire extends GameMode
 {
 	// CONSTANTS

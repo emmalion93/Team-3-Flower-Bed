@@ -9,31 +9,56 @@ import java.awt.Rectangle;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 
+/**
+ * The preview card GUI component that displays a large version of the currently moused over or selected card
+ */
 class PreviewCard extends JComponent
 {
 	
-
+	// Card information
 	private Card.Suit _suit;
 
 	private Card.Value _value;
 
 	private Boolean _faceup;
 
-	private Point _location; // location relative to container
+	/**
+	 * location relative to container
+	 */
+	private Point _location;
 
-	private Point whereAmI; // used to create abs postion rectangle for contains
-	// functions
+	/**
+	 * used to create abs postion rectangle for contains
+	 */
+	private Point whereAmI;
 
-	private int x; // used for relative positioning within CardStack Container
+	/**
+	 * used for relative positioning within CardStack or FlowerBedCardStack Container
+	 */
+	private int x;
 	private int y;
 	
+	/**
+	 * Graphical information about the card
+	 */
 	public static final int CARD_HEIGHT = 200;
 	public static final int CARD_WIDTH = 133;
 	public static final int CORNER_ANGLE = 25;
 
+	/**
+	 * The information needed to identify the correct card(suit and value) within the card file path
+	 */
 	private String imageInfo;
+	/**
+	 * The graphical component for the card
+	 */
 	private Image myImage;
 
+	/**
+	 * The constructor for the PreviewCard class. Sets the suit, value, graphical information, and default location.
+	 * @param suit
+	 * @param value
+	 */
 	PreviewCard(Card.Suit suit, Card.Value value)
 	{
 		_suit = suit;
@@ -53,6 +78,11 @@ class PreviewCard extends JComponent
 		}
 	}
 
+	/**
+	 * The default constructor for the PreviewCard class. Sets the suit, value, graphical information, and default location.
+	 * @param suit
+	 * @param value
+	 */
 	PreviewCard()
 	{
         this.setLayout(null);
@@ -75,68 +105,11 @@ class PreviewCard extends JComponent
 
 	public Card.Suit getSuit()
 	{
-		/*switch (_suit)
-		{
-		case HEARTS:
-			//System.out.println("Hearts");
-			break;
-		case DIAMONDS:
-			//System.out.println("Diamonds");
-			break;
-		case SPADES:
-			//System.out.println("Spades");
-			break;
-		case CLUBS:
-			//System.out.println("Clubs");
-			break;
-		}*/
 		return _suit;
 	}
 
 	public Card.Value getValue()
 	{
-		/*switch (_value)
-		{
-		case ACE:
-			//System.out.println(" Ace");
-			break;
-		case TWO:
-			//System.out.println(" 2");
-			break;
-		case THREE:
-			//System.out.println(" 3");
-			break;
-		case FOUR:
-			//System.out.println(" 4");
-			break;
-		case FIVE:
-			//System.out.println(" 5");
-			break;
-		case SIX:
-			//System.out.println(" 6");
-			break;
-		case SEVEN:
-			//System.out.println(" 7");
-			break;
-		case EIGHT:
-			//System.out.println(" 8");
-			break;
-		case NINE:
-			//System.out.println(" 9");
-			break;
-		case TEN:
-			//System.out.println(" 10");
-			break;
-		case JACK:
-			//System.out.println(" Jack");
-			break;
-		case QUEEN:
-			//System.out.println(" Queen");
-			break;
-		case KING:
-			//System.out.println(" King");
-			break;
-		}*/
 		return _value;
 	}
 
@@ -179,6 +152,10 @@ class PreviewCard extends JComponent
 		_value = value;
 	}
 
+	/**
+	 * sets the card faceup and updates its image accordingly
+	 * @return
+	 */
 	public PreviewCard setFaceup()
 	{
 		_faceup = true;
@@ -190,6 +167,10 @@ class PreviewCard extends JComponent
 		return this;
 	}
 
+	/**
+	 * sets the card facedown and updates its image accordingly
+	 * @return
+	 */
 	public PreviewCard setFacedown()
 	{
 		_faceup = false;
@@ -201,6 +182,9 @@ class PreviewCard extends JComponent
 		return this;
 	}
 
+	/**
+	 * Determines if a point(mouse position) is within the bounds of the card
+	 */
 	@Override
 	public boolean contains(Point p)
 	{
@@ -208,8 +192,12 @@ class PreviewCard extends JComponent
 		return (rect.contains(p));
 	}
   
+	/**
+	 * Determines the card information needed for the card file path. For example: a seven of hearts = "7H"
+	 * @return cardInfo
+	 */
 	private String getImageInfo() {
-		String s = "";// imageFile;
+		String s = "";
 		switch (_value)
 			{
 			case ACE:
@@ -270,37 +258,51 @@ class PreviewCard extends JComponent
 		return s + ".png";
 	}
 
+	/**
+	 * Resets the card file path in instances where the card background might have changed
+	 */
 	public void refreshImage() {
 		imageInfo = getImageInfo();
 		if(_faceup) {
 			try {
 				myImage = getImage();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {
 			try {
 				myImage = getFaceDownImage();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 
+	/**
+	 * Sets the image of the card based on cardInfo and the current cardPath(card background).
+	 * @return cardImage
+	 * @throws IOException
+	 */
 	private Image getImage() throws IOException {
 		Image myCard = ImageIO.read(new File(GameMode.cardPath + imageInfo));
 		myCard = myCard.getScaledInstance(CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH);
 		return myCard;
 	}
 
+	/**
+	 * Sets the image of the card based on the current cardPath(card background) and the facedown image from that card background.
+	 * @return cardImage
+	 * @throws IOException
+	 */
 	private Image getFaceDownImage() throws IOException {
 		Image myCard = ImageIO.read(new File(GameMode.cardPath+ "back.png"));//imageFile + "back.png"));
 		myCard = myCard.getScaledInstance(CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH);
 		return myCard;
 	}
 
+	/**
+	 * Draws the card generated from getImage() at the card current x and y location.
+	 */
 	@Override
 	protected void paintComponent(Graphics g)
 	{
