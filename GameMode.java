@@ -58,6 +58,9 @@ public class GameMode {
      *The path location in relation to the project folder of the current background image.
      */
     public static String backgroundPath = "CardImages/greywyvern-cardset/";
+    /**
+     * Should the cards be automatically moved to the final foundation stacks as they become available
+     */
     public static boolean autoMove = true;
 
     /**
@@ -102,9 +105,12 @@ public class GameMode {
      */
     public void undo() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
     /**
-     *Reverses a previous undo using a stack of CardState objects. Called from UI. *implementation in child class optional*
+     * Reverses a previous undo using a stack of CardState objects. Called from UI. *implementation in child class optional*
      */
     public void redo() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
+    /**
+     * Selects a card that can still be moved and then moves it using a legal move. 
+     */
     public void hint() { JOptionPane.showMessageDialog(table, "This functionality is not enabled for this game mode"); }
     /**
      *Updates the current game timer by one second. Called from UI.

@@ -32,8 +32,6 @@ public class FlowerBed extends GameMode
     public static final Point PLAY_POS = new Point(5, 35);
 
 	
-	// other components
-
 	// GAMEPLAY STRUCTURES
 	private static FlowerBedFinalStack[] final_cards;// Foundation Stacks
 	private static FlowerBedCardStack[] playCardStack; // Tableau stacks
@@ -51,11 +49,11 @@ public class FlowerBed extends GameMode
 	private Card card = null; // card to be moved
 	private Card focusedCard = null; // card to be focused
 	private PreviewCard previewCard = null; // UI that shows the currently focused card
-	private JEditorPane previewText = new JEditorPane();
-	private List<CardHistory> undoStack = new ArrayList<CardHistory>();
-	private List<CardHistory> redoStack = new ArrayList<CardHistory>();
-	private int lastHintSelected = 0;
-	private int lastHintSearched = 0;
+	private JEditorPane previewText = new JEditorPane(); // UI text above the preview card
+	private List<CardHistory> undoStack = new ArrayList<CardHistory>(); // Stack containing the move information for the users previous moves
+	private List<CardHistory> redoStack = new ArrayList<CardHistory>(); // Stack containing the move information for the users previous undos, things moved from the undoStack are moved to here
+	private int lastHintSelected = 0; // positioning variable for the hint system, identifies the last card stack that was selected for a hint search
+	private int lastHintSearched = 0; // positioning variable for the hint system, identifies the last card stack position searched during a hint search
 	// used for moving single cards
 	private FlowerBedCardStack source = null;
 	private FlowerBedCardStack dest = null;
@@ -110,11 +108,12 @@ public class FlowerBed extends GameMode
 		{
 			setScore(-2);
 		}
-		//String text = "Seconds: " + time;
 	}
 
 	// BUTTON LISTENERS
-
+	/**
+     * Ends the current game and calls the returnToPlatform() method in the platform. Called from UI.
+     */
 	public void returnToPlatform() { 
 		updateScores();
 		score = 0;
@@ -135,6 +134,11 @@ public class FlowerBed extends GameMode
 		mainMenu.returnToPlatform();
 	}
 
+	/**
+     *Gathers information about the current game state and then passes it to the platform to be saved. Called from UI. Stacks are added to a string 
+	 * seperated onto different lines, cards within a stack are spereated by ";", and the card information was an individual card is seperated by ",". 
+	 * This information once compiled is sent to the platform where it will be written to a save file for this game mode
+     */
 	public void saveGame() {
 		String cardList = "";
 		for (int x = 0; x < NUM_PLAY_DECKS; x++)
@@ -179,63 +183,75 @@ public class FlowerBed extends GameMode
 
 		cardList = cardList + "\n" + score + "\n" + time;
 
-		mainMenu.saveGame(cardList);
+		mainMenu.saveGame(gameName, cardList);
 	}
 
+	/**
+     * Gets information from the platform about a saved game state and then sets the current game state to that saved state. Called from UI. 
+	 * Cards within a stack are spereated by ";", and the card information was an individual card is seperated by ",".
+	 * If the platform returns an empty list then the player is notified that no load data exsists for this game mode.
+     */
 	public void loadGame() {
-		if (playCardStack != null && final_cards != null)
-		{
+		List<String> stacks = mainMenu.loadGame(gameName);
+
+		if(!stacks.isEmpty()) {
+
+			if (playCardStack != null && final_cards != null)
+			{
+				for (int x = 0; x < NUM_PLAY_DECKS; x++)
+				{
+					playCardStack[x].makeEmpty();
+				}
+				for (int x = 0; x < NUM_FINAL_DECKS; x++)
+				{
+					final_cards[x].makeEmpty();
+				}
+			}
+			deck.makeEmpty();
+			
 			for (int x = 0; x < NUM_PLAY_DECKS; x++)
 			{
-				playCardStack[x].makeEmpty();
+				List<String> cardList = Arrays.asList(stacks.get(x).split(";"));
+				for (int y = 0; y < cardList.size(); y++)
+				{
+					List<String> cardInfo = Arrays.asList(cardList.get(y).split(","));
+					Card c = new Card(Card.Suit.valueOf(cardInfo.get(0)), Card.Value.valueOf(cardInfo.get(1)));
+					playCardStack[x].push(c.setFaceup());
+				}
+				playCardStack[x].repaint();
 			}
 			for (int x = 0; x < NUM_FINAL_DECKS; x++)
 			{
-				final_cards[x].makeEmpty();
-			}
-		}
-		deck.makeEmpty();
+				List<String> cardList = Arrays.asList(stacks.get(NUM_PLAY_DECKS + x).split(";"));
 
-		List<String> stacks = mainMenu.loadGame();
-		
-		for (int x = 0; x < NUM_PLAY_DECKS; x++)
-		{
-			List<String> cardList = Arrays.asList(stacks.get(x).split(";"));
+				for (int y = 0; y < cardList.size(); y++)
+				{
+					List<String> cardInfo = Arrays.asList(cardList.get(y).split(","));
+					Card c = new Card(Card.Suit.valueOf(cardInfo.get(0)), Card.Value.valueOf(cardInfo.get(1)));
+					final_cards[x].push(c.setFaceup());
+				}
+				final_cards[x].repaint();
+			}
+			List<String> cardList = Arrays.asList(stacks.get(NUM_PLAY_DECKS + NUM_FINAL_DECKS).split(";"));
 			for (int y = 0; y < cardList.size(); y++)
 			{
 				List<String> cardInfo = Arrays.asList(cardList.get(y).split(","));
 				Card c = new Card(Card.Suit.valueOf(cardInfo.get(0)), Card.Value.valueOf(cardInfo.get(1)));
-				playCardStack[x].push(c.setFaceup());
+				deck.push(c.setFaceup());
 			}
-			playCardStack[x].repaint();
-		}
-		for (int x = 0; x < NUM_FINAL_DECKS; x++)
-		{
-			List<String> cardList = Arrays.asList(stacks.get(NUM_PLAY_DECKS + x).split(";"));
+			deck.reverse();
 
-			for (int y = 0; y < cardList.size(); y++)
-			{
-				List<String> cardInfo = Arrays.asList(cardList.get(y).split(","));
-				Card c = new Card(Card.Suit.valueOf(cardInfo.get(0)), Card.Value.valueOf(cardInfo.get(1)));
-				final_cards[x].push(c.setFaceup());
-			}
-			final_cards[x].repaint();
+			undoStack.clear();
+			redoStack.clear();
+			score = Integer.parseInt(stacks.get(NUM_PLAY_DECKS + NUM_FINAL_DECKS + 1));
+			time = Integer.parseInt(stacks.get(NUM_PLAY_DECKS + NUM_FINAL_DECKS + 2));
 		}
-		List<String> cardList = Arrays.asList(stacks.get(NUM_PLAY_DECKS + NUM_FINAL_DECKS).split(";"));
-		for (int y = 0; y < cardList.size(); y++)
-		{
-			List<String> cardInfo = Arrays.asList(cardList.get(y).split(","));
-			Card c = new Card(Card.Suit.valueOf(cardInfo.get(0)), Card.Value.valueOf(cardInfo.get(1)));
-			deck.push(c.setFaceup());
-		}
-		deck.reverse();
-
-		undoStack.clear();
-		redoStack.clear();
-		score = Integer.parseInt(stacks.get(NUM_PLAY_DECKS + NUM_FINAL_DECKS + 1));
-		time = Integer.parseInt(stacks.get(NUM_PLAY_DECKS + NUM_FINAL_DECKS + 2));
 	}
 
+	/**
+     * Reverses a previous undo using a stack of CardState objects. Called from UI. Moves that redone are moved back onto the undo stack. The card and its previous/current stack are 
+	 * repainted to reflect its current position. Any score changes are redone.
+     */
 	public void redo() {
 		if(redoStack.size() > 0) {
 			source =  redoStack.get(redoStack.size() - 1).getLastCardStack();
@@ -248,7 +264,6 @@ public class FlowerBed extends GameMode
 
 			Card c = card;
 			source.removeCard(card);
-
 
 			c.repaint();
 
@@ -291,6 +306,10 @@ public class FlowerBed extends GameMode
 		}
 	}
 
+	/**
+     *Reverses a previous move using a stack of CardState objects. Called from UI. Moves that undone are moved onto the redo stack. The card and its previous/current stack are 
+	 * repainted to reflect its current position. Any score changes are undone.
+     */
 	public void undo() {
 		if(undoStack.size() > 0) {
 
@@ -332,6 +351,11 @@ public class FlowerBed extends GameMode
 		}
 	}
 
+	/**
+     * Selects a card that can still be moved and then moves it using a legal move. Determines movable card by looping through all available cards and checking them all stacks for legal moves.
+	 * The last previously searched available stack and the last previously searched stack for a legal move determine the starting location for the next time hint is used to prevent getting 
+	 * stuck in a loop.
+     */
 	public void hint() {
 		boolean cardMoved = false;
 		if(tryAutoMove()) {
@@ -365,6 +389,10 @@ public class FlowerBed extends GameMode
 		}
 	}
 
+	/**
+	 * Checks through all available cards to determine if any of them can be moved onto the final stack foundations. If so, moves that card and returns true.
+	 * @return cardMoved
+	 */
 	private boolean tryAutoMove() {
 		boolean cardMoved = false;
 		for (int y = 0; y < NUM_FINAL_DECKS; y++)
@@ -407,10 +435,46 @@ public class FlowerBed extends GameMode
 			}
 		}
 
+		if(cardMoved) {
+			boolean gameNotOver = false;
+			// cycle through final decks, if they're all full then game over
+			for (int x = 0; x < NUM_FINAL_DECKS; x++)
+			{
+				dest = final_cards[x];
+				if (dest.showSize() != 13)
+				{
+					// one deck is not full, so game is not over
+					gameNotOver = true;
+					break;
+				}
+			}
+
+			if (!gameNotOver)
+			{
+				mainMenu.updateScores(gameName, score, time, true);
+				
+				undoStack.clear();
+				redoStack.clear();
+				ImageIcon myCard;
+				myCard = new ImageIcon(FlowerBed.this.getClass().getResource("Victory/winner.gif"));
+				JLabel winnerImage = new JLabel(myCard);
+				winnerImage.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
+				table.add(winnerImage);
+			}
+		}
+
 
 		return cardMoved;
 	}
 
+	/**
+	 * Checks if individual card can be automatically moved onto the final foundation and if so, moves it, repaints the previous/current stack, and returns true.
+	 * @param cMoving
+	 * @param cStacking
+	 * @param tempXStack
+	 * @param tempYStack
+	 * @return cardMoved
+	 */
 	private boolean hintLoopDeck(Card cMoving, Card cStacking, FlowerBedCardStack tempXStack, FlowerBedCardStack tempYStack) {
 		boolean cardMoved = false;
 		if(tempYStack.empty()) {
@@ -465,7 +529,6 @@ public class FlowerBed extends GameMode
 
 
 				c.repaint();
-				// if playstack, turn next card up
 				if (source.getFirst() != null)
 				{
 					Card temp = source.getFirst().setFaceup();
@@ -495,6 +558,11 @@ public class FlowerBed extends GameMode
 		return cardMoved;
 	}
 
+	/**
+	 * Loops through all available cards and all available moves and checks if they are a legal move. If so, moves them and returns true.
+	 * @param y
+	 * @return cardMoved
+	 */
 	private boolean hintLoop(int y) {
 		boolean cardMoved = false;
 		FlowerBedCardStack tempYStack = playCardStack[y];
@@ -586,6 +654,11 @@ public class FlowerBed extends GameMode
 		return cardMoved;
 	}
 
+	/**
+	 * checks if a particular move is a legal move and if so moves the card, repaints the current/previous stack, and returns true.
+	 * @param y
+	 * @return cardMoved
+	 */
 	private boolean hintTryMoveCard(Card cMoving, Card cStacking, FlowerBedCardStack tempXStack, FlowerBedCardStack tempYStack, int x, int y) {
 		boolean cardMoved = false;
 
@@ -674,12 +747,17 @@ public class FlowerBed extends GameMode
 		return cardMoved;
 	}
 
+	/**
+	 * Checks if a card can legally be moved to a specific stack based on its value and suit. If so returns true
+	 * @param source the selected card
+	 * @param dest the card it is attempted to be stacked on
+	 * @return true if legal move
+	 */
 	private boolean validPlayStackMove(Card source, Card dest)
 	{
 		int s_val = source.getValue().ordinal();
 		int d_val = dest.getValue().ordinal();
-		//Card.Suit s_suit = source.getSuit();
-		//Card.Suit d_suit = dest.getSuit();
+
 
 		// destination card should be one higher value
 		if ((s_val + 1) == d_val)
@@ -689,6 +767,12 @@ public class FlowerBed extends GameMode
 			return false;
 	}
 
+	/**
+	 * Checks if a card can legally be moved to a specific foundation stack based on its value and suit. If so returns true
+	 * @param source the selected card
+	 * @param dest the card it is attempted to be stacked on
+	 * @return true if legal move
+	 */
 	private boolean validFinalStackMove(Card source, Card dest)
 	{
 		int s_val = source.getValue().ordinal();
@@ -705,12 +789,17 @@ public class FlowerBed extends GameMode
 			return false;
 	}
 
+	/**
+	 * Determines which card is the top most card at the mouse poisition in case of cards that are closely stacked together.
+	 * @param stack
+	 * @param p
+	 * @return the top most card
+	 */
 	public Card getTop(Vector<Card> stack, Point p) {
 		Card c = null;
 		for (int x = stack.size() - 1; x >= 0; x--)
 		{
 			Card temp = (Card) stack.get(x);
-			//temp.getSuit();
 			if(temp.contains(p)) {
 				c = temp;
 			}
@@ -718,33 +807,33 @@ public class FlowerBed extends GameMode
 		return c;
 	}
 
+	/**
+     * Determines which card, if any, the mouse has been pressed on and then holds that card until the mouse is released. Called from UI.
+     * @param e The location and time information regarding a mouse press.
+     */
 	public void mousePressed(MouseEvent e)
 	{
 		  
 
 		start = e.getPoint();
 		boolean stopSearch = false;
-		//statusBox.setText("");
 		transferStack.makeEmpty();
 
 		/*
-			* Here we use transferStack to temporarily hold all the cards above
-			* the selected card in case player wants to move a stack rather
-			* than a single card
-			*/
+		* Here we determine which stack the mouse is over and the top most card in that stack that the mouse is over
+		*/
 		for (int x = 0; x < NUM_PLAY_DECKS; x++)
 		{
 			if (stopSearch)
 				break;
 			source = playCardStack[x];
-			// pinpointing exact card pressed-
+			// pinpointing exact card pressed
 			if(source.contains(start) && source.showSize() > 0) {
 				Card c = (Card) source.getStack().get(0);
 				if(c.contains(start)) {
 					transferStack.putFirst(c);
 					card = c;
 					stopSearch = true;
-					System.out.println("Transfer Size: " + transferStack.showSize());
 				}
 			}
 		}
@@ -761,7 +850,6 @@ public class FlowerBed extends GameMode
 					transferStack.putFirst(c);
 					card = c;
 					stopSearch = true;
-					System.out.println("Transfer Size: " + transferStack.showSize());
 					break;
 				}                                    
 			}
@@ -786,6 +874,11 @@ public class FlowerBed extends GameMode
 
 	}
 
+	/**
+     * Determines which stack, if any, the mouse has been released on and if it is a stack the selected card can be legally moved onto then it moves the card and repaints both stacks. 
+	 * Called from UI.
+     * @param e The location and time information regarding a mouse release.
+     */
 	public void mouseReleased(MouseEvent e)
 	{
 		stop = e.getPoint();
@@ -802,7 +895,6 @@ public class FlowerBed extends GameMode
 				if (dest.empty() && movedCard != null && dest.contains(stop)
 						&& movedCard.getValue() == Card.Value.KING)
 				{
-					System.out.print("moving new card to empty spot ");
 					movedCard.setXY(dest.getXY());
 					table.remove(prevCard);
 					dest.putFirst(movedCard);
@@ -816,26 +908,9 @@ public class FlowerBed extends GameMode
 						//TODO Remove this 
 					}
 					setScore(5);
-					System.out.println("-3");
 					validMoveMade = true;
 					break;
 				}
-				// this moves stuff from the deck out on the field automatically
-				// to populated play stack
-				/*if (movedCard != null && dest.contains(stop) && !dest.empty() && dest.getFirst().getFaceStatus()
-						&& validPlayStackMove(movedCard, dest.getFirst()))
-				{
-					System.out.print("moving new card ");
-					movedCard.setXY(dest.getFirst().getXY());
-					table.remove(prevCard);
-					dest.putFirst(movedCard);
-					table.repaint();
-					movedCard = null;
-					putBackOnDeck = false;
-					setScore(5);
-					validMoveMade = true;
-					break;
-				}*/
 			}
 			// Moving from SHOW TO FINAL
 			for (int x = 0; x < NUM_FINAL_DECKS; x++)
@@ -856,14 +931,12 @@ public class FlowerBed extends GameMode
 						movedCard = null;
 						putBackOnDeck = false;
 						setScore(10);
-						System.out.println("-2");
 						validMoveMade = true;
 						break;
 					}
 				}
 				if (!dest.empty() && dest.contains(stop) && validFinalStackMove(movedCard, dest.getLast()))
 				{
-					System.out.println("Destin" + dest.showSize());
 					dest.push(movedCard);
 					table.remove(prevCard);
 					undoStack.add(new CardHistory(movedCard, dest, source, 10));
@@ -875,7 +948,6 @@ public class FlowerBed extends GameMode
 					putBackOnDeck = false;
 					checkForWin = true;
 					setScore(10);
-					System.out.println("-1");
 					validMoveMade = true;
 					break;
 				}
@@ -913,7 +985,6 @@ public class FlowerBed extends GameMode
 					redoStack.clear();
 
 					table.repaint();
-					System.out.print("Destination ");
 					dest.showSize();
 					if (sourceIsFinalDeck) {
 						setScore(15);
@@ -923,7 +994,6 @@ public class FlowerBed extends GameMode
 						setScore(10);
 						undoStack.add(new CardHistory(c, dest, source, 10));
 					}
-					System.out.println("0");
 					validMoveMade = true;
 					break;
 				} else if (dest.empty() && transferStack.showSize() == 1 && dest.contains(stop))
@@ -950,10 +1020,8 @@ public class FlowerBed extends GameMode
 
 					table.repaint();
 
-					System.out.print("Destination ");
 					dest.showSize();
 					setScore(5);
-					System.out.println("1");
 					validMoveMade = true;
 					break;
 				}
@@ -990,11 +1058,9 @@ public class FlowerBed extends GameMode
 
 							table.repaint();
 
-							System.out.print("Destination ");
 							dest.showSize();
 							card = null;
 							setScore(10);
-							System.out.println("2");
 							validMoveMade = true;
 							break;
 						}// TO POPULATED STACK
@@ -1021,12 +1087,10 @@ public class FlowerBed extends GameMode
 
 						table.repaint();
 
-						System.out.print("Destination ");
 						dest.showSize();
 						card = null;
 						checkForWin = true;
 						setScore(10);
-						System.out.println("3");
 						validMoveMade = true;
 						break;
 					}
@@ -1038,7 +1102,6 @@ public class FlowerBed extends GameMode
 		// SHOWING STATUS MESSAGE IF MOVE INVALID
 		if (!validMoveMade && dest != null && card != null)
 		{
-			//statusBox.setText("That Is Not A Valid Move");
 		} else if(validMoveMade) {
 			playSound("Sounds/mixkit-poker-card-flick-2002.wav");
 			if(GameMode.autoMove) {
@@ -1070,14 +1133,14 @@ public class FlowerBed extends GameMode
 		if (checkForWin && gameOver)
 		{
 			mainMenu.updateScores(gameName, score, time, true);
-			//JOptionPane.showMessageDialog(table, "Congratulations! You've Won!");
 			
+			undoStack.clear();
+			redoStack.clear();
 			ImageIcon myCard;
 			myCard = new ImageIcon(FlowerBed.this.getClass().getResource("Victory/winner.gif"));
 			JLabel winnerImage = new JLabel(myCard);
 			winnerImage.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
 			table.add(winnerImage);
-			//statusBox.setText("Game Over!");
 		}
 		// RESET VARIABLES FOR NEXT EVENT
 		start = null;
@@ -1090,10 +1153,15 @@ public class FlowerBed extends GameMode
 		gameOver = false;
 	}// end mousePressed()
 
+	/**
+     * Determines if the mouse has been moved over a card and if so it changes the preview card UI to show a blown up version of that card. Called from UI.
+     * @param e The location and time information regarding a mouse movement.
+     */
 	public void mouseMoved(MouseEvent e) {
 		start = e.getPoint();
 		boolean stopSearch = false;
 
+		// If a card is already being focused on then check it first to see if the mouse is still over it. If so then dont check any other cards
 		if(focusedStack != null) {
 			if(focusedStack.contains(start) && focusedStack.showSize() > 0) {
 				if(focusedCard == getTop(focusedStack.getStack(), start)) {
@@ -1103,12 +1171,13 @@ public class FlowerBed extends GameMode
 		}
 
 
+		// Then check all the regular play stacks 
 		for (int x = 0; x < NUM_PLAY_DECKS; x++)
 		{
 			if (stopSearch)
 				break;
 			FlowerBedCardStack tempSource = playCardStack[x];
-			// pinpointing exact card pressed-
+			// pinpointing exact card
 			if(tempSource.contains(start) && tempSource.showSize() > 0) {
 				for (int y = 0; y < tempSource.showSize(); y++)
 				{
@@ -1122,9 +1191,10 @@ public class FlowerBed extends GameMode
 			}
 		}
 
+		// check all the cards in the players hand
 		if(stopSearch == false) {
 			FlowerBedCardStack tempSource = deck;
-			// pinpointing exact card pressed
+			// pinpointing exact card
 			Vector<Card> stack = tempSource.getStack();
 			for (int x = 0; x < tempSource.showSize(); x++)
 			{
@@ -1138,9 +1208,7 @@ public class FlowerBed extends GameMode
 			}
 		}
 					
-		
-		
-
+		// check all the final foundations
 		for (int x = 0; x < NUM_FINAL_DECKS; x++)
 		{
 			if (final_cards[x].contains(start))
@@ -1152,7 +1220,7 @@ public class FlowerBed extends GameMode
 			}
 		}
 
-
+		// if the mouse is over a card then set the preview card to it
 		if(focusedCard != null) {
 			previewCard.setSuit(focusedCard.getSuit());
 			previewCard.setValue(focusedCard.getValue());
@@ -1161,11 +1229,17 @@ public class FlowerBed extends GameMode
 		}
 	}
 
+	/**
+     * Updates the stored stats based on the current game and then begins a new game of this game mode. Called from UI.
+     */
 	public void newGame() {
 		updateScores();
 		playNewGame();
 	}
 
+	/**
+	 * Clears the previous scores, times, and all stacks and then deals a new game.
+	 */
 	private void playNewGame()
 	{
 		score = 0;
@@ -1174,7 +1248,6 @@ public class FlowerBed extends GameMode
 		redoStack.clear();
 		deck = new FlowerBedCardStack(true); // deal 52 cards
 		deck.shuffle();
-		//table.removeAll();
         
 		// reset stacks if user starts a new game in the middle of one
 		if (playCardStack != null && final_cards != null)
@@ -1213,12 +1286,10 @@ public class FlowerBed extends GameMode
 		for (int x = 0; x < NUM_PLAY_DECKS; x++)
 		{
 			Card c = deck.pop().setFaceup();
-			//c.setImage(cardPath);
 			playCardStack[x].putFirst(c);
 
 			
-                        //here
-                        for (int y = 0; y < 4; y++)
+            for (int y = 0; y < 4; y++)
 			{
 				c = deck.pop().setFaceup();
 				playCardStack[x].push(c);
@@ -1253,11 +1324,15 @@ public class FlowerBed extends GameMode
 
 		table.repaint();
 
+		// if the user has automove enabled then move all cards that can be moved to the final foundations
 		if(GameMode.autoMove) {
 			while(tryAutoMove()) { }
 		}
 	}
 
+	/**
+	 * Tells all cards to Reset their card file paths and repaint when the card background has changed.
+	 */
 	public void refreshCards() {
 		for (int x = 0; x < NUM_FINAL_DECKS; x++)
 		{
@@ -1288,6 +1363,9 @@ public class FlowerBed extends GameMode
 		deck.repaint();
 	}
 
+	/**
+	 * Initializes this game mode when the platform selects it as the current game mode.
+	 */
 	public void execute() {
 		frame.setSize(TABLE_WIDTH, TABLE_HEIGHT);
         

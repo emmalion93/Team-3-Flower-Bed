@@ -6,19 +6,22 @@ import java.util.Vector;
 
 import javax.swing.JComponent;
 
-/* This is GUI component with a embedded
- * data structure. This structure is a mixture
- * of a queue and a stack
+/** 
+ * This is a GUI component with a embedded data structure. This structure is a mixture of a queue and a stack. It contains a stack of cards and controls their global positioning on the frame.
  */
 class CardStack extends JComponent
 {
-	protected final int NUM_CARDS = 52;
+	// Positioning and stack information
 	protected Vector<Card> v;
 	protected boolean playStack = false;
 	protected int SPREAD = 18;
 	protected int _x = 0;
 	protected int _y = 0;
 
+	/**
+	 * Constructor class
+	 * @param isDeck
+	 */
 	public CardStack(boolean isDeck)
 	{
 		this.setLayout(null);
@@ -148,6 +151,9 @@ class CardStack extends JComponent
 		}
 	}
 
+	/**
+	 * Determines if a point(mouse position) is within the bounds of the card stack
+	 */
 	@Override
 	public boolean contains(Point p)
 	{
@@ -159,13 +165,11 @@ class CardStack extends JComponent
 	{
 		_x = x;
 		_y = y;
-		// System.out.println("CardStack SET _x: " + _x + " _y: " + _y);
 		setBounds(_x, _y, Card.CARD_WIDTH + 10, Card.CARD_HEIGHT * 3);
 	}
 
 	public Point getXY()
 	{
-		// System.out.println("CardStack GET _x: " + _x + " _y: " + _y);
 		return new Point(_x, _y);
 	}
 

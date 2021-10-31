@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
-
+/**
+ * This object contains the button information for its specific game mode and controls the UI elements within the button.
+ */
 public class GameModeButton {
 
+	// GUI Components
     private GameMode gameMode;
     private String name;
     private JPanel table;
@@ -37,11 +40,18 @@ public class GameModeButton {
     private boolean favorite;
 	private Platform menu;
 
+	/**
+	 * Constructor class. Generates the GUI components for the button. 
+	 * @param myGM
+	 * @param myTable
+	 * @param myFrame
+	 * @param myMenu
+	 */
     public GameModeButton(GameMode myGM, JPanel myTable, JFrame myFrame, Platform myMenu) {
         gameMode = myGM;
         name = myGM.getName();
         table = myTable;
-		    menu = myMenu;
+		menu = myMenu;
         frame = myFrame;
 
         gameButton = new JButton(name);
@@ -73,6 +83,11 @@ public class GameModeButton {
 		gameinformationButton.setFont(new Font("Arial", Font.BOLD, 15));
     }
 
+	/**
+	 * Set the position of the button and all its GUI components relative to the new position
+	 * @param my_x_pos
+	 * @param my_y_pos
+	 */
     public void setPosition(int my_x_pos, int my_y_pos) {
         x_pos = my_x_pos;
         y_pos = my_y_pos;
@@ -88,6 +103,9 @@ public class GameModeButton {
         addButtons();
     }
 
+	/**
+	 * Adds the GUI components to the table
+	 */
     private void addButtons() {
 		table.add(checkBox);
         table.add(gameButton);
@@ -98,24 +116,27 @@ public class GameModeButton {
 
     public boolean getFavorite() { return favorite; }
 	
+	/**
+	 * Nested class for the gameButton actionlistener. It tells the platform to start this buttons game mode.
+	 */
     private class ChooseGameListener implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
 			menu.startGame(gameMode);
-            //gameMode.execute(table ,frame);
 		}
 
 	}
 
+	/**
+	 * Nested class for the game information button actionlistener. Displays a dialog popup with a short description of this buttons game mode.
+	 */
     private class ShowDescriptionListener implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			//JButton button = (JButton) e.getSource();
-
 			JDialog ruleFrame = new JDialog(frame, true);
 			ruleFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			ruleFrame.setSize(400, 100);
@@ -124,7 +145,7 @@ public class GameModeButton {
 			String rulesText;
 
 			
-				rulesText = gameMode.getDesc();
+			rulesText = gameMode.getDesc();
 
 			rulesTextPane.setText(rulesText);
 			JScrollPane scroll = new JScrollPane(rulesTextPane);
@@ -135,6 +156,10 @@ public class GameModeButton {
 		}
 	}
 
+	/**
+	 * Nested class for the check box button actionlistener. Checks or unchecks the box and then calls for an update to the stored 
+	 * information regarding whether this game is one of the users favorites or not.
+	 */
 	private class CheckFavoritesListener implements ActionListener
 	{
 		@Override
@@ -150,6 +175,13 @@ public class GameModeButton {
 		}
 	}
 
+	/**
+	 * Gets the scores from the SavedScores text file and then updates its GUI components regarding these scores. 
+	 * Format: GameMode name:favorited(1 yes 0 no):high score,best time,total games played,total games won,last score,last time
+	 * Example: Flower Bed:1:10015,2,412,65,0,1
+	 * @param name
+	 * @return
+	 */
     private String getGameInformation(String name) {
 		BufferedReader reader;
 		List<String> lines = new ArrayList<String>();
@@ -182,6 +214,9 @@ public class GameModeButton {
 		return highScores;
 	}
 
+	/**
+	 * Updates the currently displayed scores in the GUI components based on any changes that may have occured
+	 */
 	public void refreshScores() {
 		String[] highScores = getGameInformation(name).split(",");
         highScoreBox.setText("Score: " + highScores[0] + "\n Time: " + highScores[1]);
@@ -193,6 +228,9 @@ public class GameModeButton {
         totalGamesBox.setText("Games: " + highScores[2] + "\nWins: " + highScores[3] + "\n% Wins: " + percentage + "%"+ "\nLast Score: " + highScores[4] + "\nLast Time: " + highScores[5]);
 	}
 
+	/**
+	 * Updates the SavedScores text file regarding the status on if this game mode is one of the users favorites or not.
+	 */
 	private void updateFavoriteInformation() {
 		BufferedReader reader;
 		List<String> lines = new ArrayList<String>();

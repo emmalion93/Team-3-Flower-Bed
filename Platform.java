@@ -1,6 +1,9 @@
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -10,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.ArrayList;
 
-import javax.print.attribute.standard.PagesPerMinute;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -41,6 +43,18 @@ public class Platform {
 
 	private List<GameMode> myGameModes = new ArrayList<GameMode>();
 	private List<GameModeButton> gameModeButtons = new ArrayList<GameModeButton>();
+
+	private JButton pageLeftButton = new JButton("<");
+	private JButton pageRightButton = new JButton(">");
+
+	/**
+	 * The background color options for the game platform.
+	 * If a new color is added then it must be added as an option in MenuButtons->backgroundDropDownOptions
+	 */
+	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255), Color.decode("#C594343"), Color.decode("#6F7498"), Color.decode("#A3B7F9"),  Color.decode("#092C48")};
+
+
+	// Music Control Components
 	/**
      * The currently running music clip.
      */
@@ -58,28 +72,61 @@ public class Platform {
      */
 	public static int volumeStart = -40;
 	/**
-     * The volume of the special effects. 
+     * The current volume of the special effects. 
      */
 	public static int volume = -40;
 	/**
-     * The volume of the music.
+     * The current volume of the music.
      */
-	public static int musicVolume = -40;
+	public static int musicVolume = 0;//-40;
+	/**
+     * The path to the .wav music file currently in use
+     */
+	public static String musicPath = "Sounds/Several_Species_Of_Small_Furry_Animals.wav";
 
-	public static String musicPath = "Sounds/Loop_The_Old_Tower_Inn.wav";
 
-	// Add these colors as options in MenuButtons->backgroundDropDownOptions
-	public static Color[] backgroundColors = {  new Color(0, 180, 0), new Color(255, 255, 255), new Color(204, 0, 0), new Color(51, 204, 255), Color.decode("#C594343"), Color.decode("#6F7498"), Color.decode("#A3B7F9"),  Color.decode("#092C48")};
-
+	// GameModeButton control components
+	/**
+	 * The amount of buttons to display vertically
+	 */
 	private int gridHeight = 6;
+	/**
+	 * The amount of buttons to display horizontally
+	 */
 	private int gridWidth = 3;
+	/**
+	 * The current page of GameModeButtons displayed 
+	 */
 	private int gridPage = 0;
+	/**
+	 * The total maximum amount of GameModeButtons displayed on a single page
+	 */
 	private int pageSize = gridHeight * gridWidth;
+	/**
+	 * The total amount of pages, calculated based on the total amount of GameModeButtons / the pageSize
+	 */
 	private int maxPages = 1;
+	/**
+	 * How much to horizontally offset columns of GameModeButtons from each other
+	 */
+	private int gameButtonXOffset = 250;
+	/**
+	 * How much to horizontally offset the first column of GameModeButtons from the edge of the platform
+	 */
+	private int gameButtonXOrigin = 20;
+	/**
+	 * How much to vertically offset columns of GameModeButtons
+	 */
+	private int gameButtonYOffset = 100;
+	/**
+	 * How much to vertically offset the first column of GameModeButtons from the edge of the platform
+	 */
+	private int gameButtonYOrigin = 90;
 
-	private JButton pageLeftButton = new JButton("<");;
-	private JButton pageRightButton = new JButton(">");;
-
+	/**
+     * Nested class that provides the action listener for the show favorites button. When the button is clicked it
+	 * cycles between showing the users favorite games and all the games on the platform.
+     */
 	private class ShowFavoritesListener implements ActionListener
 	{
 		@Override
@@ -95,6 +142,10 @@ public class Platform {
 		}
 	}
 
+	/**
+     * Nested class that provides the action listener for the left arrow button. When the button is clicked it
+	 * cycles LEFT through the displayed favorite games if the total amount of games exceeds the page limit.
+     */
 	private class PageLeftListener implements ActionListener
 	{
 		@Override
@@ -108,6 +159,10 @@ public class Platform {
 		}
 	}
 
+	/**
+     * Nested class that provides the action listener for the left arrow button. When the button is clicked it
+	 * cycles RIGHT through the displayed favorite games if the total amount of games exceeds the page limit.
+     */
 	private class PageRightListener implements ActionListener
 	{
 		@Override
@@ -128,6 +183,9 @@ public class Platform {
 		}
 	}
 
+	/**
+	 * Displays all the favorite games from the currently selected page. Switches the show favorites button to display the show all option
+	 */
 	private void showFavorites() {
 		table.removeAll();
 		table.add(showFavoritesButton);
@@ -137,19 +195,19 @@ public class Platform {
 		showFavoritesButton.setText("Show All");
 		showFavorites = false;
 
-		int count = 0;
 		int row = 0;
 		int col = 0;
 		boolean hide = false;
 		int startCount = pageSize * gridPage;
+		int count = 0;
 		for (int x = 0; x < gameModeButtons.size(); x++)
 		{
 			if(gameModeButtons.get(x).getFavorite()) {
 
 				if(count >= startCount && count < startCount + pageSize) {
 					if(!hide) {
-						int height = 90 + 100 * row;
-						gameModeButtons.get(x).setPosition(20 + 250 * col, height);
+						int height = gameButtonYOrigin + gameButtonYOffset * row;
+						gameModeButtons.get(x).setPosition(gameButtonXOrigin + gameButtonXOffset * col, height);
 						gameModeButtons.get(x).refreshScores();
 
 						if(row + 1 < gridHeight) {
@@ -159,7 +217,8 @@ public class Platform {
 							if(col + 1 < gridWidth) {
 								col += 1;
 							} else {
-								hide = true;
+								//hide = true;
+								break;
 							}
 						}
 					}
@@ -171,6 +230,9 @@ public class Platform {
 		table.repaint();
 	}
 
+	/**
+	 * Displays all the games from the currently selected page. Switches the show favorites button to display the show favorites option
+	 */
 	private void showAll() {
 		table.removeAll();
 		table.add(showFavoritesButton);
@@ -185,8 +247,9 @@ public class Platform {
 		for (int x = pageSize * gridPage; x < gameModeButtons.size(); x++)
 		{
 			if(!hide) {
-				int height = 90 + 100 * row;
-				gameModeButtons.get(x).setPosition(20 + 250 * col, height);
+				int height = gameButtonYOrigin + gameButtonYOffset * row;
+				gameModeButtons.get(x).setPosition(gameButtonXOrigin + gameButtonXOffset * col, height);
+				gameModeButtons.get(x).refreshScores();
 
 				if(row + 1 < gridHeight) {
 					row += 1;
@@ -194,8 +257,9 @@ public class Platform {
 					row = 0;
 					if(col + 1 < gridWidth) {
 						col += 1;
-					}else {
-						hide = true;
+					} else {
+						//hide = true;
+						break;
 					}
 				}
 			}
@@ -204,21 +268,34 @@ public class Platform {
 		table.repaint();
 	}
 
+	/**
+	 * Starts the selected music file based on the musicPath string.
+	 */
 	private void startMusic() {
-		// TODO music starts in loud 
 		try {
-			AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(musicPath));
+			AudioInputStream aStream = AudioSystem.getAudioInputStream(new File(musicPath));
 			music = AudioSystem.getClip();
-			music.open(audioStream);
+			music.open(aStream);
 			music.loop(Clip.LOOP_CONTINUOUSLY);
-			FloatControl volumeControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
-			volumeControl.setValue(musicVolume);
+			setVolume(musicVolume);
 			music.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Sets the volume of the currently playing music to the int vol
+	 * @param vol
+	 */
+	private void setVolume(int vol) {
+		FloatControl volumeControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
+		volumeControl.setValue(vol);
+	}
+
+	/**
+	 * Creates the initial platform UI elements and adds them to the table and starts the music. Game modes and their buttons are added for each game mode the platform supports.
+	 */
     private void playMainMenu()
 	{
 		startMusic();
@@ -262,8 +339,8 @@ public class Platform {
 			
 			if(!hide) {
 				if(gameModeButtons.get(x).getFavorite()) {
-					int height = 90 + 100 * row;
-					gameModeButtons.get(x).setPosition(20 + 250 * col, height);
+					int height = gameButtonYOrigin + gameButtonYOffset * row;
+					gameModeButtons.get(x).setPosition(gameButtonXOrigin + gameButtonXOffset * col, height);
 				}
 
 				if(row + 1 < gridHeight) {
@@ -294,8 +371,11 @@ public class Platform {
 	}
 
 	/**
-     * Updates scores and stats in the database. called from a GameMode child class when a game is won or lost.
-     * @param gameName The name of the game wanting to update its scores.
+     * Updates scores and stats in the word file containing all the stored GameMode stats. Called from a GameMode child class when a game is won or lost. 
+	 * If no entry exsists for the current game then one is made and stored.
+     * Format: GameMode name:favorited(1 yes 0 no):high score,best time,total games played,total games won,last score,last time
+	 * Example: Flower Bed:1:10015,2,412,65,0,1
+	 * @param gameName The name of the game wanting to update its scores.
      * @param score The current score of the game.
      * @param time The current time of the game.
      * @param win Whether the game was won or lost.
@@ -358,39 +438,84 @@ public class Platform {
 	}
 
 	/**
-     * Saves the current state of the game to the database. called from a GameMode 
-     * child class.
-     * @param cardList a string containing each stack of cards
+     * Saves the current state of the game in the word file coresponding to the game mode. Called from a GameMode child class. If no file exsists for the current game then one is made and stored.
+     * @param gameName a string containing the name of the game mode being saved
+	 * @param cardList a string containing each stack of cards
      * (example: value,suit:value,suit: then repeat on new line for each stack)
      */
-	public void saveGame(String cardList) {
-		try {
-			PrintWriter writer = new PrintWriter("SavedFile.txt");
-			writer.print(cardList);
-			writer.close();
-		} catch(IOException i) {
-			i.printStackTrace();
+	public void saveGame(String gameName, String cardList) {
+		File saveFile = new File(gameName + "SavedFile.txt");
+		boolean fileExists = saveFile.exists();
+
+		if(fileExists) {
+			System.out.println("old file");
+			try {
+				PrintWriter writer = new PrintWriter(gameName + "SavedFile.txt");
+				writer.print(cardList);
+				writer.close();
+			} catch(IOException i) {
+				i.printStackTrace();
+			}
+		} else {
+			System.out.println("new file");
+			try {
+				PrintWriter writer = new PrintWriter(saveFile);
+				writer.print(cardList);
+				writer.close();
+			} catch(IOException i) {
+				i.printStackTrace();
+			}
 		}
 	}
 
 	/**
-     * loads the current state of the game to the database. called from a GameMode 
-     * child class and returns stack and score/time information.
+     * Loads the current state of the game from the word file coresponding to the game mode. Called from a GameMode child class and returns stack and score/time information.
+	 * If no file exsists for the current game mode or the file contains an error then a error message UI box is displayed instead
      * @return List of strings containing each stack of cards and the current score/time
      * (example: value,suit:value,suit: for each stack, final two lines are score and time)
      */
-	public List<String> loadGame() {
+	public List<String> loadGame(String gameName) {
 		BufferedReader reader;
 		List<String> lines = new ArrayList<String>();
 
-		try {
-			reader = new BufferedReader(new FileReader("SavedFile.txt"));
-			while(reader.ready()) {
-				lines.add(reader.readLine());
+		File loadFile = new File(gameName + "SavedFile.txt");
+		boolean fileExists = loadFile.exists();
+
+		if(fileExists) {
+			try {
+				reader = new BufferedReader(new FileReader(loadFile));
+				while(reader.ready()) {
+					lines.add(reader.readLine());
+				}
+				reader.close();
+			} catch(IOException i) {
+				i.printStackTrace();
 			}
-			reader.close();
-		} catch(IOException i) {
-			i.printStackTrace();
+		} else {
+			JFrame confirmFrame = new JFrame("Something went wrong");
+			JPanel confirmTable = new JPanel();
+			JEditorPane confirmText = new JEditorPane();
+			Container contentPane;
+
+
+			confirmTable.setLayout(null);
+
+			contentPane = confirmFrame.getContentPane();
+			contentPane.add(confirmTable);
+
+			confirmFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			confirmFrame.setSize(400, 200);
+
+			confirmText.setText("Sorry! No save file exists for this game!");
+			confirmText.setFont(new Font("Arial", Font.BOLD, 15));
+			confirmText.setEditable(false);
+			confirmText.setOpaque(false);
+			confirmText.setBounds(5, 45, 400, 60);
+
+			confirmTable.add(confirmText);
+
+			confirmTable.setVisible(true);
+			confirmFrame.setVisible(true);
 		}
 		return lines;
 	}

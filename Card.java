@@ -9,8 +9,13 @@ import java.awt.Rectangle;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+/**
+ * The object that contains a specific cards information such as the suit, value, position, and graphical elements
+ * @author Emily
+ */
 class Card extends JPanel
 {
+	// Card information
 	public static enum Value
 	{
 		ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING
@@ -27,22 +32,44 @@ class Card extends JPanel
 
 	private Boolean _faceup;
 
-	private Point _location; // location relative to container
+	/**
+	 * location relative to container
+	 */
+	private Point _location;
 
-	private Point whereAmI; // used to create abs postion rectangle for contains
-	// functions
+	/**
+	 * used to create abs postion rectangle for contains
+	 */
+	private Point whereAmI; 
 
-	private int x; // used for relative positioning within CardStack Container
+	/**
+	 * used for relative positioning within CardStack or FlowerBedCardStack Container
+	 */
+	private int x; 
 	private int y;
 	
+	/**
+	 * Graphical information about the card
+	 */
 	public static final int CARD_HEIGHT = 150;
 	public static final int CARD_WIDTH = 100;
 	public static final int CORNER_ANGLE = 25;
 	public int scale = 1;
 
+	/**
+	 * The information needed to identify the correct card(suit and value) within the card file path
+	 */
 	private String imageInfo;
+	/**
+	 * The graphical component for the card
+	 */
 	private Image myImage;
 
+	/**
+	 * The constructor for the Card class. Sets the suit, value, graphical information, and default location.
+	 * @param suit
+	 * @param value
+	 */
 	Card(Suit suit, Value value)
 	{
 		_suit = suit;
@@ -62,6 +89,11 @@ class Card extends JPanel
 		}
 	}
 
+	/**
+	 * The default constructor for the Card class. Sets the suit, value, graphical information, and default location.
+	 * @param suit
+	 * @param value
+	 */
 	Card()
 	{
 		_suit = Card.Suit.CLUBS;
@@ -128,6 +160,10 @@ class Card extends JPanel
 		_value = value;
 	}
 
+	/**
+	 * sets the card faceup and updates its image accordingly
+	 * @return
+	 */
 	public Card setFaceup()
 	{
 		_faceup = true;
@@ -139,6 +175,10 @@ class Card extends JPanel
 		return this;
 	}
 
+	/**
+	 * sets the card facedown and updates its image accordingly
+	 * @return
+	 */
 	public Card setFacedown()
 	{
 		_faceup = false;
@@ -150,13 +190,20 @@ class Card extends JPanel
 		return this;
 	}
 
+	/**
+	 * Determines if a point(mouse position) is within the bounds of the card
+	 */
 	@Override
 	public boolean contains(Point p)
 	{
 		Rectangle rect = new Rectangle(whereAmI.x, whereAmI.y, Card.CARD_WIDTH, Card.CARD_HEIGHT);
 		return (rect.contains(p));
 	}
-  
+	
+	/**
+	 * Determines the card information needed for the card file path. For example: a seven of hearts = "7H"
+	 * @return cardInfo
+	 */
 	private String getImageInfo() {
 		String s = "";
 		switch (_value)
@@ -219,37 +266,51 @@ class Card extends JPanel
 		return s + ".png";
 	}
 
+	/**
+	 * Resets the card file path in instances where the card background might have changed
+	 */
 	public void refreshImage() {
 		imageInfo = getImageInfo();
 		if(_faceup) {
 			try {
 				myImage = getImage();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {
 			try {
 				myImage = getFaceDownImage();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 
+	/**
+	 * Sets the image of the card based on cardInfo and the current cardPath(card background).
+	 * @return cardImage
+	 * @throws IOException
+	 */
 	private Image getImage() throws IOException {
 		Image myCard = ImageIO.read(new File(GameMode.cardPath + imageInfo));
 		myCard = myCard.getScaledInstance(CARD_WIDTH * scale, CARD_HEIGHT * scale, Image.SCALE_SMOOTH);
 		return myCard;
 	}
 
+	/**
+	 * Sets the image of the card based on the current cardPath(card background) and the facedown image from that card background.
+	 * @return cardImage
+	 * @throws IOException
+	 */
 	private Image getFaceDownImage() throws IOException {
-		Image myCard = ImageIO.read(new File(GameMode.cardPath+ "back.png"));//imageFile + "back.png"));
+		Image myCard = ImageIO.read(new File(GameMode.cardPath+ "back.png"));
 		myCard = myCard.getScaledInstance(CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH);
 		return myCard;
 	}
 
+	/**
+	 * Draws the card generated from getImage() at the card current x and y location.
+	 */
 	@Override
 	public void paintComponent(Graphics g)
 	{

@@ -6,11 +6,13 @@ import java.awt.Rectangle;
 import java.awt.geom.RoundRectangle2D;
 
 /*
- * Adapts the FlowerBedCardStack to be used as the final
- * (foundation) stack
+ * Adapts the FlowerBedCardStack to be used as the final (foundation) stack
  */
 class FlowerBedFinalStack extends FlowerBedCardStack
 {
+	/**
+	 * Constructor class
+	 */
 	public FlowerBedFinalStack()
 	{
 		super(false);
@@ -24,6 +26,9 @@ class FlowerBedFinalStack extends FlowerBedCardStack
 		setBounds(_x, _y, Card.CARD_WIDTH + 10, Card.CARD_HEIGHT + 10);
 	}
 
+	/**
+	 * Determines if a point(mouse position) is within the bounds of the card stack
+	 */
 	@Override
 	public boolean contains(Point p)
 	{
