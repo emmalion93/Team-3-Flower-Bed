@@ -452,11 +452,9 @@ public class FlowerBed extends GameMode
 				
 				undoStack.clear();
 				redoStack.clear();
-				ImageIcon myCard;
-				myCard = new ImageIcon(FlowerBed.this.getClass().getResource("Victory/winner.gif"));
-				JLabel winnerImage = new JLabel(myCard);
-				winnerImage.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
-				table.add(winnerImage);
+				JLabel victoryGIF = new JLabel(new ImageIcon("Victory/winner.gif"));
+				victoryGIF.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
+				table.add(victoryGIF);
 			}
 		}
 
@@ -1063,11 +1061,10 @@ public class FlowerBed extends GameMode
 			
 			undoStack.clear();
 			redoStack.clear();
-			ImageIcon myCard;
-			myCard = new ImageIcon(FlowerBed.this.getClass().getResource("Victory/winner.gif"));
-			JLabel winnerImage = new JLabel(myCard);
-			winnerImage.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
-			table.add(winnerImage);
+			
+			JLabel victoryGIF = new JLabel(new ImageIcon("Victory/winner.gif"));
+			victoryGIF.setBounds(-100, 30, Card.CARD_WIDTH + 1000, Card.CARD_HEIGHT * 4);
+			table.add(victoryGIF);
 		}
 		// RESET VARIABLES FOR NEXT EVENT
 		start = null;
