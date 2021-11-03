@@ -255,7 +255,7 @@ public class UI {
 	/**
      * Toggles the current timer on or off depending on its current state.
      */
-	public void toggleTimer()
+	protected void toggleTimer()
 	{
 		if (timeRunning && scoreClock != null)
 		{
@@ -270,7 +270,7 @@ public class UI {
 	/**
      * Stops the current timer and resets the UI components to reflect this change.
      */
-	public void stopTimer()
+	protected void stopTimer()
 	{
 		scoreClock.cancel();
 		String text = "Seconds: 0";
@@ -485,22 +485,12 @@ public class UI {
 				/**
 				 * Checks if the selected music is currently playing and if not, stops the current music and sets the music and the music path in the platform to the temp music path
 				 */
-				try {
-					AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(musicPath));
-					if(Platform.musicPath != musicPath) {
-						Platform.music.stop();
-						Platform.music = AudioSystem.getClip();
-						Platform.music.open(audioStream);
-						Platform.music.loop(Clip.LOOP_CONTINUOUSLY);
-						Platform.musicPath = musicPath;
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				if(Platform.musicPath != musicPath) {
+					Platform.setMusic(musicPath);
 				}
 
 				// Adjusts the music volume
-				FloatControl volumeControl = (FloatControl) Platform.music.getControl(FloatControl.Type.MASTER_GAIN);
-				volumeControl.setValue(Platform.musicVolume);
+				Platform.setVolume();
 
 				// Adjust the positioning of the UI components
 				if(dropDown.getSelectedItem().equals("Top")) {

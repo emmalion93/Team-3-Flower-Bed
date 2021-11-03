@@ -78,7 +78,7 @@ public class Platform {
 	/**
      * The current volume of the music.
      */
-	public static int musicVolume = 0;//-40;
+	public static int musicVolume = 0;
 	/**
      * The path to the .wav music file currently in use
      */
@@ -217,7 +217,6 @@ public class Platform {
 							if(col + 1 < gridWidth) {
 								col += 1;
 							} else {
-								//hide = true;
 								break;
 							}
 						}
@@ -258,7 +257,6 @@ public class Platform {
 					if(col + 1 < gridWidth) {
 						col += 1;
 					} else {
-						//hide = true;
 						break;
 					}
 				}
@@ -272,31 +270,40 @@ public class Platform {
 	 * Starts the selected music file based on the musicPath string.
 	 */
 	private void startMusic() {
+			setMusic(musicPath);
+			setVolume();
+	}
+
+	/**
+	 * Sets the selected music file based on the musicPath string.
+	 */
+	public static void setMusic(String mPath) {
 		try {
-			AudioInputStream aStream = AudioSystem.getAudioInputStream(new File(musicPath));
+			AudioInputStream musicStream = AudioSystem.getAudioInputStream(new File(mPath));
+			if(music != null){
+				music.stop();
+			}
 			music = AudioSystem.getClip();
-			music.open(aStream);
+			music.open(musicStream);
 			music.loop(Clip.LOOP_CONTINUOUSLY);
-			setVolume(musicVolume);
-			music.start();
+			musicPath = mPath;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * Sets the volume of the currently playing music to the int vol
-	 * @param vol
+	 * Sets the volume of the currently playing music
 	 */
-	private void setVolume(int vol) {
+	public static void setVolume() {
 		FloatControl volumeControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN);
-		volumeControl.setValue(vol);
+		volumeControl.setValue(musicVolume);
 	}
 
 	/**
 	 * Creates the initial platform UI elements and adds them to the table and starts the music. Game modes and their buttons are added for each game mode the platform supports.
 	 */
-    private void playMainMenu()
+    private void playGamePlatform()
 	{
 		startMusic();
 		table.removeAll();
@@ -564,7 +571,7 @@ public class Platform {
 		Platform menu = new Platform();
 		menuButtons.generateButtons();
 		menuButtons.disableMainMenuButtons();
-        menu.playMainMenu();
+        menu.playGamePlatform();
 
 		frame.setVisible(true);
 	}
