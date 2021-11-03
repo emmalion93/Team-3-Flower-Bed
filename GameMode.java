@@ -154,7 +154,8 @@ public class GameMode {
      * @param audioPath a string containing the path location of the audio file in relation to the project folder.
      */
     protected void playSound(String audioPath) {
-        try {
+        Platform.playSound(audioPath);
+        /*try {
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(audioPath));
             Clip soundEffect = AudioSystem.getClip();
             soundEffect.open(audioStream);
@@ -169,6 +170,6 @@ public class GameMode {
             soundEffect.start();
         }  catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

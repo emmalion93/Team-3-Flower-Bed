@@ -301,6 +301,29 @@ public class Platform {
 	}
 
 	/**
+     * Plays the audio file at the selected path.
+     * @param audioPath a string containing the path location of the audio file in relation to the project folder.
+     */
+	public static void playSound(String audioPath) {
+        try {
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(audioPath));
+            Clip soundEffect = AudioSystem.getClip();
+            soundEffect.open(audioStream);
+            FloatControl volumeControl = (FloatControl) soundEffect.getControl(FloatControl.Type.MASTER_GAIN);
+            int vol = volume;
+            if(vol + 10 > 6) {
+                vol = 6;
+            } else {
+                vol += 10;
+            }
+            volumeControl.setValue(vol);
+            soundEffect.start();
+        }  catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+	/**
 	 * Creates the initial platform UI elements and adds them to the table and starts the music. Game modes and their buttons are added for each game mode the platform supports.
 	 */
     private void playGamePlatform()
