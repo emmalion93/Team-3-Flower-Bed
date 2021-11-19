@@ -3,11 +3,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.event.MouseEvent;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
-import java.io.File;
+
 /**
  * The Parent class that acts as an abstract class for all solitaire game modes. 
  * Contains variables and methods needed by all game modes. Methods should be 
@@ -150,26 +146,10 @@ public class GameMode {
     }
 
     /**
-     * Plays the audio file at the selected path.
+     * Tells the platform to play the audio file at the selected path.
      * @param audioPath a string containing the path location of the audio file in relation to the project folder.
      */
     protected void playSound(String audioPath) {
         Platform.playSound(audioPath);
-        /*try {
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(audioPath));
-            Clip soundEffect = AudioSystem.getClip();
-            soundEffect.open(audioStream);
-            FloatControl volumeControl = (FloatControl) soundEffect.getControl(FloatControl.Type.MASTER_GAIN);
-            int vol = Platform.volume;
-            if(vol + 10 > 6) {
-                vol = 6;
-            } else {
-                vol += 10;
-            }
-            volumeControl.setValue(vol);
-            soundEffect.start();
-        }  catch (Exception e) {
-            e.printStackTrace();
-        }*/
     }
 }
